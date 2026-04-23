@@ -1,0 +1,70 @@
+{
+  "name": "niggativity-vscode",
+  "displayName": "Niggativity",
+  "description": "Local-first autonomous coding assistant",
+  "version": "1.0.0",
+  "publisher": "niggativity",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Programming Languages"
+  ],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "niggativity-sidebar",
+          "title": "Niggativity",
+          "icon": "$(hubot)"
+        }
+      ]
+    },
+    "views": {
+      "niggativity-sidebar": [
+        {
+          "type": "webview",
+          "id": "niggativity-chat",
+          "name": "Chat"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "niggativity.sendMessage",
+        "title": "Niggativity: Send Message"
+      },
+      {
+        "command": "niggativity.runTask",
+        "title": "Niggativity: Run Task"
+      },
+      {
+        "command": "niggativity.insertCode",
+        "title": "Niggativity: Insert Code"
+      },
+      {
+        "command": "niggativity.optimizeSelection",
+        "title": "Niggativity: Optimize Selection"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "niggativity.optimizeSelection",
+          "group": "modification"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "package": "vsce package",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.80.0"
+  }
+}
