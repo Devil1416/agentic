@@ -19,19 +19,23 @@ Endpoints:
     GET  /models        — Get model info
     GET  /artifacts     — Get session artifacts
 """
-import sys, os, io, json, threading
+import sys, os, io, json, threading, re
 from typing import Optional
 
 if sys.platform == "win32":
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except AttributeError:
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.responses import StreamingResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from session.session_manager import SessionManager
@@ -78,6 +82,7 @@ class ChatRequest(BaseModel):
 
 class RunRequest(BaseModel):
     goal: Optional[str] = None
+    max_iterations: Optional[int] = None
 
 class SwitchSessionRequest(BaseModel):
     session_id: str
@@ -128,6 +133,18 @@ async def chat(req: ChatRequest):
         session.state["auto_execute"] = False
         session.save()
         return StreamingResponse(iter(["data: {\"token\": \"\", \"done\": true, \"full_response\": \"🛡️ Auto-Execute DISABLED. I will ask for approval before executing plans.\"}\n\n"]), media_type="text/event-stream")
+
+    if msg == "/debug_forever":
+        session.state["max_debug_iterations"] = 0
+        session.save()
+        return StreamingResponse(iter(["data: {\"token\": \"\", \"done\": true, \"full_response\": \"Debug loop set to unlimited retries.\"}\n\n"]), media_type="text/event-stream")
+
+    debug_limit_match = re.fullmatch(r"/debug_limit\s+(\d+)", msg)
+    if debug_limit_match:
+        limit = int(debug_limit_match.group(1))
+        session.state["max_debug_iterations"] = limit
+        session.save()
+        return StreamingResponse(iter([f"data: {{\"token\": \"\", \"done\": true, \"full_response\": \"Debug loop limit set to {limit} iterations.\"}}\n\n"]), media_type="text/event-stream")
 
     session.add_message("user", msg)
 
@@ -228,6 +245,21 @@ class ExecuteRequest(BaseModel):
     plan: dict
     task: str
     workspace_dir: str
+    max_iterations: Optional[int] = None
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Warm lightweight dependencies in the background."""
+    def _warm():
+        try:
+            get_installed_models()
+            from memory.vector_store import warm_memory_system
+            warm_memory_system()
+        except Exception as e:
+            print(f"[server] warmup skipped: {e}")
+
+    threading.Thread(target=_warm, daemon=True).start()
 
 @app.post("/run")
 async def run_task(req: RunRequest):
@@ -252,6 +284,10 @@ async def run_task(req: RunRequest):
     plan = generate_plan(goal, os.path.basename(workspace))
     if "error" in plan:
         raise HTTPException(500, plan["error"])
+    requested_iterations = req.max_iterations
+    if requested_iterations is None:
+        requested_iterations = session.state.get("max_debug_iterations", 0)
+    plan["max_debug_iterations"] = requested_iterations
         
     session.add_artifact({
         "type": "plan",
@@ -268,17 +304,37 @@ async def run_task(req: RunRequest):
                 try:
                     def status_cb(msg):
                         session.add_message("assistant", msg)
-                    result = execute_plan(plan, goal, workspace, status_cb=status_cb)
+                    result = execute_plan(
+                        plan,
+                        goal,
+                        workspace,
+                        status_cb=status_cb,
+                        max_iterations=requested_iterations,
+                    )
                     v = result.get("verdict", {}) if result else {}
                     session.add_message("assistant", f"Build complete. Verdict: {v.get('verdict','N/A')}")
                 except Exception as e:
                     session.add_message("assistant", f"Build error: {e}")
         
         threading.Thread(target=_bg_execute, daemon=True).start()
-        return {"status": "started", "goal": goal, "workspace": workspace, "plan": plan, "auto_executed": True}
+        return {
+            "status": "started",
+            "goal": goal,
+            "workspace": workspace,
+            "plan": plan,
+            "auto_executed": True,
+            "max_iterations": requested_iterations,
+        }
     else:
         session.add_message("assistant", "Plan generated. Auto-execute is OFF. Please review the plan in artifacts and approve to continue.")
-        return {"status": "planned", "goal": goal, "workspace": workspace, "plan": plan, "auto_executed": False}
+        return {
+            "status": "planned",
+            "goal": goal,
+            "workspace": workspace,
+            "plan": plan,
+            "auto_executed": False,
+            "max_iterations": requested_iterations,
+        }
 
 @app.post("/run/execute")
 async def execute_task(req: ExecuteRequest):
@@ -293,7 +349,13 @@ async def execute_task(req: ExecuteRequest):
                 from orchestrator import execute_plan
                 def status_cb(msg):
                     session.add_message("assistant", msg)
-                result = execute_plan(req.plan, req.task, req.workspace_dir, status_cb=status_cb)
+                result = execute_plan(
+                    req.plan,
+                    req.task,
+                    req.workspace_dir,
+                    status_cb=status_cb,
+                    max_iterations=req.max_iterations,
+                )
                 if result:
                     v = result.get("verdict", {})
                     session.add_message("assistant",
@@ -355,7 +417,8 @@ async def read_file(path: str = Query(...)):
 async def get_session_state():
     s = get_session().state
     return {k: s.get(k) for k in ["session_id", "title", "mode", "current_goal", "workspace_dir",
-                                    "iteration_count", "tech_stack", "last_task", "files_created"]}
+                                    "iteration_count", "tech_stack", "last_task", "files_created",
+                                    "thinking_mode", "auto_execute", "max_debug_iterations"]}
 
 @app.post("/session/reset")
 async def reset_session():
@@ -438,6 +501,11 @@ async def get_models():
 # ─── UI Serving ────────────────────────────────────────
 
 @app.get("/ui")
+async def redirect_ui():
+    """Redirect /ui to /ui/ to ensure relative paths work correctly."""
+    return RedirectResponse(url="/ui/")
+
+
 @app.get("/ui/")
 async def serve_ui():
     """Serve the web UI index page."""
@@ -455,7 +523,7 @@ app.mount("/ui", StaticFiles(directory=UI_DIR), name="ui-static")
 if __name__ == "__main__":
     import uvicorn
     print("\n" + "="*60)
-    print("  NIGGATIVITY — API Server v2.0")
+    print("  NIGGATIVITY — API Server v2.0 (RESTARTED)")
     print("="*60)
     print("  Backend: http://localhost:8000")
     print("  Docs:    http://localhost:8000/docs")

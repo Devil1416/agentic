@@ -1,0 +1,19 @@
+{
+  "main.py": {
+    "summary": "Reads a log file, parses its lines, analyzes statistics, and prints the results.",
+    "classes": [],
+    "functions": [
+      "main",
+      "read_log_file",
+      "parse_log_line",
+      "analyze_stats"
+    ],
+    "imports": [
+      "argparse",
+      "utils",
+      "parser",
+      "analyzer"
+    ],
+    "hash": "4725bf7d0f1e2079bb596688f25d10d5"
+  }
+}

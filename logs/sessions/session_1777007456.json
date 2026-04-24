@@ -1,0 +1,26 @@
+{
+  "session_id": "session_1777007456",
+  "title": "build a camera based app for desktop that puts on a superher\u2026",
+  "created": "2026-04-24T10:40:56.949525",
+  "last_active": "2026-04-24T10:41:38.161885",
+  "current_goal": "build a camera based app for desktop that puts on a superhero mask over my face in real time that changes every few milliseconds",
+  "current_plan": null,
+  "workspace_dir": null,
+  "conversation": [
+    {
+      "role": "user",
+      "content": "build a camera based app for desktop that puts on a superhero mask over my face in real time that changes every few milliseconds",
+      "timestamp": "2026-04-24T10:41:30.949923"
+    }
+  ],
+  "mode": "plan",
+  "iteration_count": 0,
+  "files_created": [],
+  "tech_stack": null,
+  "file_structure": [],
+  "last_task": null,
+  "artifacts": [],
+  "thinking_mode": false,
+  "auto_execute": false,
+  "max_debug_iterations": 0
+}

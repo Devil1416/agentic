@@ -1,53 +1,95 @@
 #!/usr/bin/env python3
 """
-start.py — Launcher for the niggativity multi-interface system.
+start.py - Launcher for the niggativity multi-interface system.
 
 Usage:
-    python start.py          # Starts backend and opens UI in browser
+    python start.py          # Starts backend if needed and opens UI in browser
     python start.py --api    # Starts backend API only
 """
 
 import os
-import sys
 import subprocess
+import sys
 import time
+import urllib.error
+import urllib.request
 import webbrowser
-import threading
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+BACKEND_URL = "http://127.0.0.1:8000/"
+UI_URL = "http://127.0.0.1:8000/ui"
+
+
+def backend_is_healthy(timeout: float = 1.0) -> bool:
+    try:
+        req = urllib.request.Request(BACKEND_URL)
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            return response.status == 200
+    except (urllib.error.URLError, ConnectionError):
+        return False
+
 
 def start_backend():
+    if backend_is_healthy():
+        print("[*] Reusing backend already running on port 8000.")
+        return None
+
     print("[*] Starting backend server...")
     server_path = os.path.join(ROOT, "backend", "server.py")
     return subprocess.Popen([sys.executable, server_path])
 
+
+def wait_for_backend(timeout_s: int = 20) -> bool:
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        if backend_is_healthy():
+            return True
+        time.sleep(0.5)
+    return False
+
+
 def main():
+    backend_process = start_backend()
+
     if "--api" in sys.argv:
-        backend_process = start_backend()
+        if not wait_for_backend():
+            print("[!] Backend did not become healthy in time.")
+            if backend_process:
+                backend_process.terminate()
+            sys.exit(1)
         try:
-            backend_process.wait()
+            if backend_process:
+                backend_process.wait()
+            else:
+                while True:
+                    time.sleep(60)
         except KeyboardInterrupt:
             print("\n[*] Shutting down backend...")
-            backend_process.terminate()
+            if backend_process:
+                backend_process.terminate()
         return
 
-    # Start backend
-    backend_process = start_backend()
-    
-    # Wait a moment for server to bind
-    time.sleep(2)
-    
-    # Open UI
-    ui_url = "http://localhost:8000/ui"
-    print(f"[*] Opening UI in browser: {ui_url}")
-    webbrowser.open(ui_url)
-    
+    if not wait_for_backend():
+        print("[!] Backend did not become healthy in time.")
+        if backend_process:
+            backend_process.terminate()
+        sys.exit(1)
+
+    print(f"[*] Opening UI in browser: {UI_URL}")
+    webbrowser.open(UI_URL)
+
     print("\n[*] System is running. Press Ctrl+C to exit.\n")
     try:
-        backend_process.wait()
+        if backend_process:
+            backend_process.wait()
+        else:
+            while True:
+                time.sleep(60)
     except KeyboardInterrupt:
         print("\n[*] Shutting down...")
-        backend_process.terminate()
+        if backend_process:
+            backend_process.terminate()
+
 
 if __name__ == "__main__":
     main()

@@ -15,21 +15,14 @@ You evaluate code solutions based on:
 3. Code quality — clean, readable, well-structured?
 4. Error handling — robust against edge cases?
 
-You MUST output your verdict as JSON:
+You MUST output your verdict as STRICT JSON:
 
 ```json
 {
-  "action": "done",
-  "args": {
-    "result": {
-      "verdict": "accept" or "retry" or "refine",
-      "best_variant": 1 or 2,
-      "score": 0-10,
-      "reasoning": "explanation",
-      "issues": ["issue1", "issue2"],
-      "suggestions": ["suggestion1"]
-    }
-  }
+  "verdict": "accept" or "retry" or "refine",
+  "best_variant": 1 or 2,
+  "score": 0-10,
+  "reasoning": "explanation"
 }
 ```
 
@@ -93,6 +86,9 @@ Output your verdict as JSON."""
         verdict = _heuristic_verdict(execution_results)
 
     if verdict:
+        best_var = verdict.get("best_variant")
+        if best_var is None:
+            verdict["best_variant"] = 1
         print(f"   Score: {verdict.get('score', '?')}/10")
         print(f"   Verdict: {verdict.get('verdict', '?')}")
         print(f"   Reasoning: {verdict.get('reasoning', 'N/A')[:100]}")

@@ -96,7 +96,7 @@ def _run_command(cmd, cwd: str, timeout: int, label: str, shell: bool = False) -
             env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
         )
 
-        parts = [f"[exec] {label}"]
+        parts = [f"[exec] {label}", f"cwd: {cwd}"]
         parts.append(f"exit_code: {proc.returncode}")
 
         if proc.stdout.strip():

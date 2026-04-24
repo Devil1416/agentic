@@ -199,6 +199,12 @@ class CLI:
         mode = result.get("mode", "DISCUSS").upper()
         response = result.get("response", "")
 
+        lower_input = user_input.lower()
+        if any(keyword in lower_input for keyword in ["build", "create", "implement", "fix", "run"]):
+            mode = "EXECUTE"
+            if "goal" not in result:
+                result["goal"] = user_input
+
         if mode == "CHAT":
             self._handle_chat(user_input, response, context)
 

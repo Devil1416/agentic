@@ -1,0 +1,31 @@
+{
+  "session_id": "session_1776971782",
+  "title": "Build a desktop Python application that uses the webcam (Ope\u2026",
+  "created": "2026-04-24T00:46:22.824810",
+  "last_active": "2026-04-24T00:46:44.666104",
+  "current_goal": null,
+  "current_plan": null,
+  "workspace_dir": null,
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Build a desktop Python application that uses the webcam (OpenCV) to detect a face in real time, draws a bounding box around the face, and overlays a semi-transparent superhero-style mask image on the face; allow switching between at least 3 different masks using keyboard input (keys 1, 2, 3), and display FPS on screen. Use Python with opencv-python and numpy, organize the code into multiple files (main.py, face_detection.py, mask_overlay.py), and ensure the app runs with `python main.py`. If dependencies are missing, install them automatically. Do not explain steps\u2014directly build, run, debug, and iterate until it works, with the final result being a working webcam feed with face detection, mask overlay, mask switching, and no crashes.",
+      "timestamp": "2026-04-24T00:46:28.986281"
+    },
+    {
+      "role": "user",
+      "content": "Build a desktop Python application that uses the webcam (OpenCV) to detect a face in real time, draws a bounding box around the face, and overlays a semi-transparent superhero-style mask image on the face; allow switching between at least 3 different masks using keyboard input (keys 1, 2, 3), and display FPS on screen. Use Python with opencv-python and numpy, organize the code into multiple files (main.py, face_detection.py, mask_overlay.py), and ensure the app runs with `python main.py`. If dependencies are missing, install them automatically. Do not explain steps\u2014directly build, run, debug, and iterate until it works, with the final result being a working webcam feed with face detection, mask overlay, mask switching, and no crashes.",
+      "timestamp": "2026-04-24T00:46:44.665157"
+    }
+  ],
+  "mode": "debug",
+  "iteration_count": 0,
+  "files_created": [],
+  "tech_stack": null,
+  "file_structure": [],
+  "last_task": null,
+  "artifacts": [],
+  "thinking_mode": false,
+  "auto_execute": false,
+  "max_debug_iterations": 0
+}

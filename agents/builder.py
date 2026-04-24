@@ -63,128 +63,76 @@ def _normalize_workspace_path(path: str, workspace_dir: str) -> str:
 
 
 def run_builder(plan: dict, workspace_dir: str, variant_id: int = 1, status_cb=None) -> dict:
-    """
-    Generate code files based on the plan.
-
-    Args:
-        plan: Parsed plan from the planner.
-        workspace_dir: Target directory for code generation.
-        variant_id: Builder variant number (1 or 2).
-        status_cb: Optional callback for progress updates.
-
-    Returns:
-        Summary dict with files_written and any errors.
-    """
-    tools_desc = get_tools_description()
-    system = BUILDER_SYSTEM.format(tools=tools_desc)
-
     files = plan.get("files", [])
-    existing_files = plan.get("existing_files_to_modify", [])
     deps = plan.get("dependencies", [])
-    entrypoint = plan.get("entrypoint", "main.py")
     language = plan.get("language", "python")
 
-    plan_summary = json.dumps({
-        "files_to_create": files,
-        "files_to_modify": existing_files,
-        "dependencies": deps,
-        "entrypoint": entrypoint,
-        "language": language,
-        "description": plan.get("description", ""),
-        "architecture": plan.get("architecture", ""),
-    }, indent=2)
-
-    # Fetch contents of existing files to provide context to the builder
-    existing_contents = ""
-    for ef in existing_files:
-        path = ef.get("path", "")
-        full_path = os.path.join(workspace_dir, path)
-        if os.path.isfile(full_path):
-            try:
-                with open(full_path, "r", encoding="utf-8", errors="replace") as f:
-                    content = f.read()
-                existing_contents += f"\n--- EXISTING FILE: {path} ---\n```\n{content}\n```\n"
-            except Exception:
-                pass
-
-    prompt = f"""Build Variant #{variant_id}
-
-Project Plan:
-{plan_summary}
-
-Workspace directory: {workspace_dir}
-
-{existing_contents}
-
-Execute the plan. Use `write_file` for new files and `edit_file_diff` for existing files.
-File paths should be relative to the workspace: {workspace_dir}/path/to/file
-
-Begin processing files now. Start with the first file."""
+    files_written = []
+    errors = []
 
     print(f"\n{'=' * 60}")
     print(f"🔨 BUILDER #{variant_id} — Generating code...")
     print(f"{'=' * 60}")
 
-    files_written = []
-    errors = []
-    conversation = [prompt]
+    for file_info in files:
+        if isinstance(file_info, dict):
+            path = file_info.get("path")
+            purpose = file_info.get("purpose", "")
+        else:
+            path = file_info
+            purpose = ""
+            
+        if not path:
+            continue
+            
+        full_path = _normalize_workspace_path(path, workspace_dir)
+        rel_path = os.path.relpath(full_path, workspace_dir)
+        
+        if status_cb:
+            status_cb(f"[BUILDER] Creating file: {rel_path}")
+        else:
+            print(f"   [BUILDER] Creating file: {rel_path}")
 
-    for round_num in range(MAX_TOOL_ROUNDS):
-        current_prompt = "\n\n---\n\n".join(conversation[-3:])  # Keep context window manageable
+        prompt = f'''Write the complete, production-ready code for the file: {path}
+Purpose: {purpose}
+Language: {language}
+Dependencies: {', '.join(deps) if deps else 'None'}
+Project Plan: {json.dumps(plan)}
+
+Rules:
+1. Provide ONLY the raw source code.
+2. DO NOT wrap the code in markdown code blocks (e.g. ```python).
+3. DO NOT output any explanations or text outside the code.
+4. Ensure all imports are correct and matches the filenames.
+5. Ensure required modules (e.g., parser, analyzer, utils) are imported correctly.
+'''
 
         response = call_model(
             role="builder",
-            prompt=current_prompt,
-            system_prompt=system,
+            prompt=prompt,
+            system_prompt="You are an expert software engineer. Output ONLY raw source code for the requested file. No explanations.",
             temperature=0.2,
         )
 
-        # Parse tool calls from response
-        calls = parse_tool_calls(response)
+        content_resp = response.strip()
+        if content_resp.startswith("```"):
+            lines = content_resp.split("\n")
+            if len(lines) > 1 and lines[0].startswith("```"):
+                lines = lines[1:]
+            if len(lines) > 0 and lines[-1].strip().startswith("```"):
+                lines = lines[:-1]
+            content_resp = "\n".join(lines).strip()
 
-        if not calls:
-            # No valid tool calls — check if builder is done
-            if "done" in response.lower() or round_num > len(files) + 2:
-                print(f"   Builder #{variant_id} finished ({len(files_written)} files)")
-                break
-            # Nudge the model
-            conversation.append(response)
-            conversation.append(
-                "Please output a valid JSON tool call. Use write_file to write the next file, "
-                "or {\"action\": \"done\", \"args\": {\"result\": \"complete\"}} if finished."
-            )
-            continue
+        try:
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            with open(full_path, "w", encoding="utf-8") as f2:
+                f2.write(content_resp)
+            files_written.append(rel_path)
+            print(f"   [FILE UPDATED] {rel_path}")
+        except Exception as e:
+            err_msg = f"Failed to write {rel_path}: {e}"
+            print(f"   ❌ Tool error: {err_msg}")
+            errors.append(err_msg)
 
-        for call in calls:
-            if call["action"] == "done":
-                print(f"   ✅ Builder #{variant_id} done ({len(files_written)} files)")
-                return {"files_written": files_written, "errors": errors}
-
-            # Fix relative paths
-            if call["action"] in ("write_file", "edit_file_diff") and "path" in call.get("args", {}):
-                call["args"]["path"] = _normalize_workspace_path(call["args"]["path"], workspace_dir)
-
-            result = execute_tool(call)
-
-            if result.get("success"):
-                action = call.get("action")
-                if action in ("write_file", "edit_file_diff"):
-                    try:
-                        p = call.get("args", {}).get("path", "unknown")
-                        rel_path = os.path.relpath(p, workspace_dir)
-                        if status_cb:
-                            status_cb(f"[FILE UPDATED] {rel_path}")
-                        else:
-                            print(f"   [FILE UPDATED] {rel_path}")
-                        files_written.append(rel_path)
-                    except Exception:
-                        pass
-                
-                conversation.append(f"Tool {call['action']} executed successfully.")
-            else:
-                err_msg = result.get("error", "Unknown error")
-                print(f"   ❌ Tool error: {err_msg}")
-                errors.append(err_msg)
-                conversation.append(f"Tool {call['action']} failed: {err_msg}")
-
+    print(f"   ✅ Builder #{variant_id} done ({len(files_written)} files)")
     return {"files_written": files_written, "errors": errors}

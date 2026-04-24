@@ -1,0 +1,11 @@
+{
+  "main.py": {
+    "summary": "This is a simple Python script",
+    "classes": [],
+    "functions": [
+      "print"
+    ],
+    "imports": [],
+    "hash": "ad9226653b90d5ae482a9dfb5fb1febe"
+  }
+}

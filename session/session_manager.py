@@ -39,6 +39,9 @@ class SessionManager:
             "file_structure": [],     # current workspace file listing
             "last_task": None,        # last executed task description
             "artifacts": [],          # list of artifacts (code outputs, files, structured data)
+            "thinking_mode": False,
+            "auto_execute": False,
+            "max_debug_iterations": 0,
         }
 
         # Load existing session if available
@@ -147,6 +150,10 @@ class SessionManager:
         self.state["title"] = title
         self.save()
 
+    def set_setting(self, key: str, value):
+        self.state[key] = value
+        self.save()
+
     def add_file(self, filepath: str):
         if filepath not in self.state["files_created"]:
             self.state["files_created"].append(filepath)
@@ -189,6 +196,9 @@ class SessionManager:
             "file_structure": [],
             "last_task": None,
             "artifacts": [],
+            "thinking_mode": False,
+            "auto_execute": False,
+            "max_debug_iterations": 0,
         }
         self.save()
 
@@ -208,6 +218,9 @@ class SessionManager:
             f"  Last task:  {s.get('last_task') or '(none)'}",
             f"  Tech stack: {stack_str}",
             f"  Workspace:  {s.get('workspace_dir') or '(none)'}",
+            f"  Thinking:   {'on' if s.get('thinking_mode') else 'off'}",
+            f"  Auto Exec:  {'on' if s.get('auto_execute') else 'off'}",
+            f"  Debug Cap:  {'unlimited' if s.get('max_debug_iterations', 0) == 0 else s.get('max_debug_iterations')}",
             f"  Messages:   {len(s.get('conversation', []))}",
             f"  Files:      {len(s.get('files_created', []))}",
             f"  Artifacts:  {len(s.get('artifacts', []))}",

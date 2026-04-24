@@ -1,99 +1,123 @@
 """
-memory/vector_store.py — Persistent memory via FAISS + sentence-transformers.
+memory/vector_store.py - Persistent memory via FAISS + sentence-transformers.
 
-Falls back to simple cosine-similarity JSON store if FAISS unavailable.
+Falls back to cosine similarity or keyword matching when heavy dependencies
+are unavailable, and supports background warmup to reduce first-request lag.
 """
 
 import json
 import os
+import threading
 import time
-import numpy as np
 from typing import Optional
+
+import numpy as np
 
 MEMORY_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "memory")
 MEMORY_JSON = os.path.join(MEMORY_DIR, "entries.json")
 
-# Lazy-loaded globals
 _embedder = None
 _index = None
 _entries: list[dict] = []
 _USE_FAISS = False
+_init_lock = threading.Lock()
+_warm_thread = None
 
 
-def _init():
-    """Initialize the memory system (lazy)."""
-    global _embedder, _index, _entries, _USE_FAISS
-    if _embedder is not None:
-        return
-
+def _load_entries():
+    """Load persisted memory entries without loading embedding models."""
+    global _entries
     os.makedirs(MEMORY_DIR, exist_ok=True)
-
-    # Load existing entries
     if os.path.exists(MEMORY_JSON):
-        with open(MEMORY_JSON, "r", encoding="utf-8") as f:
-            _entries = json.load(f)
+        with open(MEMORY_JSON, "r", encoding="utf-8") as handle:
+            _entries = json.load(handle)
     else:
         _entries = []
 
-    # Try FAISS + sentence-transformers
-    try:
-        import faiss
-        from sentence_transformers import SentenceTransformer
 
-        _embedder = SentenceTransformer("all-MiniLM-L6-v2")
-        dim = _embedder.get_sentence_embedding_dimension()
+def _init(allow_heavy: bool = True):
+    """Initialize the memory system lazily."""
+    global _embedder, _index, _entries, _USE_FAISS
 
-        faiss_path = os.path.join(MEMORY_DIR, "index.faiss")
-        if os.path.exists(faiss_path) and _entries:
-            _index = faiss.read_index(faiss_path)
-        else:
-            _index = faiss.IndexFlatL2(dim)
-            # Re-index existing entries
-            if _entries:
-                texts = [e["text"] for e in _entries]
-                vecs = _embedder.encode(texts, normalize_embeddings=True)
-                _index.add(np.array(vecs, dtype=np.float32))
+    with _init_lock:
+        if _embedder is not None:
+            return
 
-        _USE_FAISS = True
-        print("[memory] ✓ FAISS + sentence-transformers loaded")
+        if not _entries:
+            _load_entries()
 
-    except ImportError:
-        print("[memory] ⚠ FAISS not available, using JSON fallback")
-        _USE_FAISS = False
-        # Fallback: use a simple embedding approach
+        if not allow_heavy:
+            return
+
         try:
+            import faiss
             from sentence_transformers import SentenceTransformer
+
             _embedder = SentenceTransformer("all-MiniLM-L6-v2")
+            try:
+                dim = _embedder.get_embedding_dimension()
+            except AttributeError:
+                dim = _embedder.get_sentence_embedding_dimension()
+
+            faiss_path = os.path.join(MEMORY_DIR, "index.faiss")
+            if os.path.exists(faiss_path) and _entries:
+                _index = faiss.read_index(faiss_path)
+            else:
+                _index = faiss.IndexFlatL2(dim)
+                if _entries:
+                    texts = [entry["text"] for entry in _entries]
+                    vecs = _embedder.encode(texts, normalize_embeddings=True)
+                    _index.add(np.array(vecs, dtype=np.float32))
+
+            _USE_FAISS = True
+            print("[memory] FAISS + sentence-transformers loaded")
         except ImportError:
-            _embedder = None
-            print("[memory] ⚠ sentence-transformers not available, using keyword matching")
+            _USE_FAISS = False
+            try:
+                from sentence_transformers import SentenceTransformer
+
+                _embedder = SentenceTransformer("all-MiniLM-L6-v2")
+                print("[memory] sentence-transformers loaded without FAISS")
+            except ImportError:
+                _embedder = None
+                print("[memory] using keyword memory fallback")
 
 
 def _save():
     """Persist entries to disk."""
     global _index
     os.makedirs(MEMORY_DIR, exist_ok=True)
-    with open(MEMORY_JSON, "w", encoding="utf-8") as f:
-        json.dump(_entries, f, indent=2)
+    with open(MEMORY_JSON, "w", encoding="utf-8") as handle:
+        json.dump(_entries, handle, indent=2)
 
     if _USE_FAISS and _index is not None:
         import faiss
+
         faiss_path = os.path.join(MEMORY_DIR, "index.faiss")
         faiss.write_index(_index, faiss_path)
 
 
+def warm_memory_system():
+    """Warm the heavy memory stack on a background thread."""
+    global _warm_thread
+
+    def _warm():
+        try:
+            _init(allow_heavy=True)
+        except Exception as e:
+            print(f"[memory] warmup skipped: {e}")
+
+    if _embedder is not None:
+        return
+    if _warm_thread and _warm_thread.is_alive():
+        return
+
+    _warm_thread = threading.Thread(target=_warm, daemon=True)
+    _warm_thread.start()
+
+
 def add_memory(text: str, category: str = "general", metadata: Optional[dict] = None) -> str:
-    """
-    Store a memory entry.
-
-    Args:
-        text: The content to remember.
-        category: One of 'error', 'fix', 'success', 'plan', 'general'.
-        metadata: Optional extra data to store.
-
-    Returns:
-        Confirmation string.
-    """
+    """Store a memory entry."""
     _init()
 
     entry = {
@@ -104,8 +128,7 @@ def add_memory(text: str, category: str = "general", metadata: Optional[dict] = 
     }
     _entries.append(entry)
 
-    # Add to FAISS index
-    if _USE_FAISS and _embedder is not None:
+    if _USE_FAISS and _embedder is not None and _index is not None:
         vec = _embedder.encode([text], normalize_embeddings=True)
         _index.add(np.array(vec, dtype=np.float32))
 
@@ -114,27 +137,17 @@ def add_memory(text: str, category: str = "general", metadata: Optional[dict] = 
 
 
 def search_memory(query: str, top_k: int = 5) -> list[dict]:
-    """
-    Search memory for relevant past entries.
-
-    Args:
-        query: Search query.
-        top_k: Number of results to return.
-
-    Returns:
-        List of matching entries with scores.
-    """
-    _init()
+    """Search memory for relevant past entries."""
+    _init(allow_heavy=False)
 
     if not _entries:
         return []
 
     if _USE_FAISS and _embedder is not None and _index is not None and _index.ntotal > 0:
         return _faiss_search(query, top_k)
-    elif _embedder is not None:
+    if _embedder is not None:
         return _embedding_search(query, top_k)
-    else:
-        return _keyword_search(query, top_k)
+    return _keyword_search(query, top_k)
 
 
 def _faiss_search(query: str, top_k: int) -> list[dict]:
@@ -155,7 +168,7 @@ def _faiss_search(query: str, top_k: int) -> list[dict]:
 def _embedding_search(query: str, top_k: int) -> list[dict]:
     """Search using cosine similarity without FAISS."""
     query_vec = _embedder.encode([query], normalize_embeddings=True)[0]
-    texts = [e["text"] for e in _entries]
+    texts = [entry["text"] for entry in _entries]
     vecs = _embedder.encode(texts, normalize_embeddings=True)
 
     scores = np.dot(vecs, query_vec)
@@ -180,12 +193,12 @@ def _keyword_search(query: str, top_k: int) -> list[dict]:
         if overlap > 0:
             scored.append((overlap / max(len(query_words), 1), entry))
 
-    scored.sort(key=lambda x: x[0], reverse=True)
+    scored.sort(key=lambda item: item[0], reverse=True)
     results = []
     for score, entry in scored[:top_k]:
-        e = dict(entry)
-        e["score"] = score
-        results.append(e)
+        result = dict(entry)
+        result["score"] = score
+        results.append(result)
     return results
 
 
@@ -196,8 +209,8 @@ def get_relevant_context(query: str, top_k: int = 3) -> str:
         return ""
 
     lines = ["## Relevant Past Memories:"]
-    for r in results:
-        cat = r.get("category", "general")
-        text = r["text"][:300]
-        lines.append(f"- [{cat}] {text}")
+    for result in results:
+        category = result.get("category", "general")
+        text = result["text"][:300]
+        lines.append(f"- [{category}] {text}")
     return "\n".join(lines)

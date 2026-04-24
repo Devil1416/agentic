@@ -36,6 +36,7 @@ let pollInterval = null;
 // â”€â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 document.addEventListener('DOMContentLoaded', () => {
     checkConnection();
+    loadSessionState();
     loadSessions();
     loadHistory();
     loadFiles();
@@ -112,6 +113,25 @@ async function pollHistory() {
     await loadHistory();
 }
 
+async function loadSessionState() {
+    try {
+        const res = await fetch(`${API}/session`);
+        const data = await res.json();
+        thinkingMode = !!data.thinking_mode;
+        autoExecute = !!data.auto_execute;
+
+        btnThink.classList.toggle('active', thinkingMode);
+        btnThink.title = `Thinking Mode: ${thinkingMode ? 'ON' : 'OFF'}`;
+        btnThink.style.color = thinkingMode ? 'var(--accent-violet)' : 'inherit';
+        btnThink.style.borderColor = thinkingMode ? 'var(--accent-violet)' : 'var(--border-color)';
+
+        btnAuto.classList.toggle('active', autoExecute);
+        btnAuto.title = `Auto-Execute: ${autoExecute ? 'ON' : 'OFF'}`;
+        btnAuto.style.color = autoExecute ? 'var(--accent-cyan)' : 'inherit';
+        btnAuto.style.borderColor = autoExecute ? 'var(--accent-cyan)' : 'var(--border-color)';
+    } catch { /* backend not up */ }
+}
+
 // â”€â”€â”€ Connection Check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function checkConnection() {
     try {
@@ -174,6 +194,7 @@ async function switchSession(sessionId) {
         messageHistoryLength = 0;
         chatMessages.innerHTML = '';
         reAddWelcome();
+        await loadSessionState();
         await loadHistory();
         await loadFiles();
         await loadSessions();
@@ -195,6 +216,7 @@ async function newSession() {
         messageHistoryLength = 0;
         chatMessages.innerHTML = '';
         reAddWelcome();
+        await loadSessionState();
         await loadFiles();
         await loadSessions();
         showToast('New session created', 'success');
@@ -510,11 +532,15 @@ async function showSessionInfo() {
     try {
         const res = await fetch(`${API}/session`);
         const s = await res.json();
+        const debugCap = s.max_debug_iterations === 0 ? 'unlimited' : s.max_debug_iterations;
         const info = `**Session:** ${s.session_id}
 **Title:** ${s.title || '(untitled)'}
 **Mode:** ${s.mode}
 **Goal:** ${s.current_goal || '(none)'}
 **Workspace:** ${s.workspace_dir || '(none)'}
+**Thinking:** ${s.thinking_mode ? 'on' : 'off'}
+**Auto Execute:** ${s.auto_execute ? 'on' : 'off'}
+**Debug Cap:** ${debugCap}
 **Iterations:** ${s.iteration_count}`;
         appendMessage('assistant', info);
         if (welcomeScreen) welcomeScreen.style.display = 'none';

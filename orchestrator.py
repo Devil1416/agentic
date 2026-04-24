@@ -141,7 +141,7 @@ def generate_plan(task: str, workspace_name: str = None) -> dict:
     return plan
 
 
-def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
+def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_iterations: int | None = None):
     """Execute a generated plan."""
     init_tools()
 
@@ -150,10 +150,12 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
             status_cb(message)
         print(message)
 
+    iteration_limit = _resolve_iteration_limit(plan, max_iterations)
+
     print(f"\n{'=' * 60}")
     print("NIGGATIVITY - Executing Plan")
     print(f"{'=' * 60}")
-    print(f"Max iterations: {MAX_ITERATIONS}")
+    print(f"Max iterations: {'unlimited' if iteration_limit == 0 else iteration_limit}")
     print()
 
     session_log = {
@@ -174,10 +176,14 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
 
     best_result = None
 
-    for iteration in range(MAX_ITERATIONS):
+    iteration = 0
+    while iteration_limit == 0 or iteration < iteration_limit:
         iter_log = {"iteration": iteration + 1, "timestamp": datetime.now().isoformat()}
         print(f"\n{'-' * 60}")
-        print(f"ITERATION {iteration + 1}/{MAX_ITERATIONS}")
+        if iteration_limit == 0:
+            print(f"ITERATION {iteration + 1}")
+        else:
+            print(f"ITERATION {iteration + 1}/{iteration_limit}")
         print(f"{'-' * 60}")
 
         entrypoint = plan.get("entrypoint", "main.py")
@@ -188,7 +194,10 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
         execution_results = []
         verdict = None
 
-        log_status(f"\n[BUILDER] Iteration {iteration + 1}/{MAX_ITERATIONS}")
+        if iteration_limit == 0:
+            log_status(f"\n[BUILDER] Iteration {iteration + 1}")
+        else:
+            log_status(f"\n[BUILDER] Iteration {iteration + 1}/{iteration_limit}")
 
         for variant_id in range(1, num_variants + 1):
             variant_workspace = _prepare_variant_workspace(
@@ -207,12 +216,59 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
         for variant_id, variant_workspace in enumerate(variant_workspaces, start=1):
             full_entry_path = os.path.join(variant_workspace, entrypoint)
             if not os.path.isfile(full_entry_path):
-                print(f"\n[EXECUTOR] Variant #{variant_id} missing entrypoint: {entrypoint}")
-                execution_results.append(f"Error: Entrypoint {entrypoint} missing.")
+                from tools.executor import _detect_entrypoint
+                detected = _detect_entrypoint(variant_workspace)
+                if detected:
+                    entrypoint = detected
+                    plan["entrypoint"] = detected
+                    full_entry_path = os.path.join(variant_workspace, entrypoint)
+                    
+            # VALIDATION BEFORE EXECUTION
+            files_missing = False
+            variant_files = _get_project_files(variant_workspace)
+            for f_info in plan.get("files", []):
+                p = f_info.get("path") if isinstance(f_info, dict) else f_info
+                if p and p not in variant_files:
+                    files_missing = True
+                    break
+
+            if files_missing or not os.path.isfile(full_entry_path):
+                print(f"\n[EXECUTOR] Variant #{variant_id} missing files. Triggering builder.")
+                execution_results.append(f"Error: Missing required files.")
                 continue
 
             log_status(f"\n[EXECUTOR] Executing variant #{variant_id}...")
             exec_result = _run_entrypoint(variant_workspace, entrypoint, language)
+
+            # --- AUTO-INSTALL & SELF-REPAIR ---
+            if "ModuleNotFoundError:" in exec_result:
+                import re
+                m = re.search(r"ModuleNotFoundError: No module named '([^']+)'", exec_result)
+                if m:
+                    module = m.group(1)
+                    mod_file = f"{module}.py"
+                    full_mod_path = os.path.join(variant_workspace, mod_file)
+                    
+                    if not os.path.exists(full_mod_path):
+                        print(f"\n[SELF-REPAIR] triggered")
+                        print(f"[SELF-REPAIR] root cause: ModuleNotFoundError for {module}. Missing local file.")
+                        print(f"[BUILDER] Creating file: {mod_file}")
+                        run_builder({"files": [mod_file]}, variant_workspace, variant_id=variant_id, status_cb=log_status)
+                        exec_result = _run_entrypoint(variant_workspace, entrypoint, language)
+                    else:
+                        if "error_history" not in session_log:
+                            session_log["error_history"] = []
+                        session_log["error_history"].append(module)
+                        
+                        if session_log["error_history"].count(module) >= 2:
+                            print(f"\n[SELF-REPAIR] triggered for repeated error on {module}.")
+                        else:
+                            mapped = {"cv2": "opencv-python", "opencv": "opencv-python", "pil": "Pillow", "sklearn": "scikit-learn"}.get(module.lower(), module)
+                            print(f"\n[DEPENDENCY] installing {mapped} (auto-fallback)")
+                            _install_python_deps([mapped], variant_workspace)
+                            exec_result = _run_entrypoint(variant_workspace, entrypoint, language)
+            # ----------------------------------
+
             print(f"   {exec_result[:200]}")
             execution_results.append(exec_result)
 
@@ -224,6 +280,26 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
         )
 
         chosen_workspace = variant_workspaces[0] if variant_workspaces else workspace_dir
+        
+        # VALIDATE FILES
+        files_missing = False
+        project_files = _get_project_files(chosen_workspace)
+        if not project_files or not os.path.isfile(os.path.join(chosen_workspace, entrypoint)):
+            files_missing = True
+        else:
+            for f_info in plan.get("files", []):
+                p = f_info.get("path") if isinstance(f_info, dict) else f_info
+                if p and p not in project_files:
+                    files_missing = True
+                    break
+        
+        if files_missing:
+            log_status("\n[BUILDER] triggered (no files found or entrypoint missing). Skipping debug.")
+            iter_log["debug"] = "Skipped - missing files"
+            session_log["iterations"].append(iter_log)
+            iteration += 1
+            continue
+
         if len(variants) > 1 and execution_results:
             verdict = run_judge(task, variants, execution_results)
             iter_log["judge"] = verdict
@@ -237,13 +313,13 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
             if verdict and verdict.get("verdict") == "refine":
                 log_status("\n[REFINER] Applying judge suggestions...")
                 refine_result = run_refiner(
-                    workspace_dir,
-                    _get_project_files(workspace_dir),
+                    chosen_workspace,
+                    _get_project_files(chosen_workspace),
                     verdict.get("suggestions", []),
                 )
                 iter_log["refine"] = refine_result
 
-                rerun_result = _run_entrypoint(workspace_dir, entrypoint, language)
+                rerun_result = _run_entrypoint(chosen_workspace, entrypoint, language)
                 execution_results = [rerun_result]
                 iter_log["execution_after_refine"] = execution_results
                 has_error = (
@@ -251,6 +327,7 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
                     or "traceback" in rerun_result.lower()
                     or "exit_code: 1" in rerun_result.lower()
                 )
+                _sync_variant_to_workspace(chosen_workspace, workspace_dir)
 
             if not has_error:
                 log_status("\n[EXECUTOR] Success! Exit code 0, no errors detected.")
@@ -266,15 +343,16 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
         error_output = "\n\n".join(execution_results) if execution_results else f"Error: Entrypoint {entrypoint} missing."
         log_status(f"[ERROR]\n{error_output}")
 
-        debug_result = run_debugger(error_output, workspace_dir, _get_project_files(workspace_dir), status_cb=log_status)
+        debug_result = run_debugger(error_output, chosen_workspace, _get_project_files(chosen_workspace), status_cb=log_status)
         iter_log["debug"] = debug_result
 
         if debug_result.get("fixed"):
             print("\n[EXECUTOR] Re-executing after fix...")
-            rerun_result = _run_entrypoint(workspace_dir, entrypoint, language)
+            rerun_result = _run_entrypoint(chosen_workspace, entrypoint, language)
             print(f"   {rerun_result[:200]}")
             execution_results = [rerun_result]
             iter_log["execution_after_debug"] = execution_results
+            _sync_variant_to_workspace(chosen_workspace, workspace_dir)
             has_error = (
                 "error" in rerun_result.lower()
                 or "traceback" in rerun_result.lower()
@@ -297,11 +375,12 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
             "workspace": workspace_dir,
         }
 
-        if iteration >= MAX_ITERATIONS - 1:
+        if iteration_limit != 0 and iteration >= iteration_limit - 1:
             log_status("\n[EXECUTOR] Max iterations reached. Stopping auto-continue.")
             break
 
         log_status(f"\nRetrying (iteration {iteration + 2})...")
+        iteration += 1
 
     print(f"\n{'=' * 60}")
     print("SESSION COMPLETE")
@@ -326,12 +405,12 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None):
     return best_result
 
 
-def run(task: str, workspace_name: str = None, status_cb=None):
+def run(task: str, workspace_name: str = None, status_cb=None, max_iterations: int | None = None):
     """Plan and execute a task end-to-end."""
     plan = generate_plan(task, workspace_name=workspace_name)
     if "error" in plan:
         return plan
-    return execute_plan(plan, task, plan["workspace_dir"], status_cb=status_cb)
+    return execute_plan(plan, task, plan["workspace_dir"], status_cb=status_cb, max_iterations=max_iterations)
 
 
 def _run_entrypoint(workspace_dir: str, entrypoint: str, language: str) -> str:
@@ -340,6 +419,25 @@ def _run_entrypoint(workspace_dir: str, entrypoint: str, language: str) -> str:
     if language in ("javascript", "node"):
         return run_node(workspace_dir, entrypoint, timeout=30)
     return run_command(f"python {entrypoint}", cwd=workspace_dir, timeout=30)
+
+
+def _resolve_iteration_limit(plan: dict, override: int | None) -> int:
+    """Resolve the debug/build retry cap. Zero means unlimited."""
+    if override is not None:
+        return max(0, int(override))
+
+    plan_value = plan.get("max_debug_iterations")
+    if plan_value is not None:
+        return max(0, int(plan_value))
+
+    env_value = os.getenv("NIGGATIVITY_MAX_DEBUG_ITERATIONS")
+    if env_value:
+        try:
+            return max(0, int(env_value))
+        except ValueError:
+            pass
+
+    return MAX_ITERATIONS
 
 
 def _get_project_files(workspace_dir: str) -> list[str]:
@@ -362,7 +460,11 @@ def _prepare_variant_workspace(workspace_dir: str, iteration: int, variant_id: i
         f"variant_{variant_id}",
     )
     if os.path.isdir(variant_dir):
-        shutil.rmtree(variant_dir)
+        import stat
+        def force_remove(func, path, exc_info):
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+        shutil.rmtree(variant_dir, onerror=force_remove)
     os.makedirs(variant_dir, exist_ok=True)
 
     if seed_from_workspace:
@@ -400,10 +502,26 @@ def _install_python_deps(deps: list[str], workspace_dir: str):
     """Install Python dependencies."""
     if not deps:
         return
+
+    if sys.version_info >= (3, 13):
+        print(f"\n[DEPENDENCY] Warning: Python >= 3.13 detected ({sys.version.split()[0]}). Some packages might fail.")
+
     print(f"\nInstalling Python deps: {deps}")
+    for d in deps:
+        print(f"[DEPENDENCY] installing {d}")
+
     dep_str = " ".join(deps)
     result = run_command(f'"{sys.executable}" -m pip install {dep_str}', cwd=workspace_dir, timeout=120)
     print(f"   {result[:200]}")
+    
+    if "error:" in result.lower() or "no matching distribution" in result.lower():
+        print("   Dependency install failed. Attempting to fix names and retry...")
+        fixed_deps = [d.replace("opencv", "opencv-python").replace("cv2", "opencv-python") for d in deps]
+        fixed_deps = ["Pillow" if "pil" in d.lower() else d for d in fixed_deps]
+        if fixed_deps != deps:
+            dep_str = " ".join(fixed_deps)
+            result = run_command(f'"{sys.executable}" -m pip install {dep_str}', cwd=workspace_dir, timeout=120)
+            print(f"   Retry result: {result[:200]}")
 
 
 def _install_node_deps(deps: list[str], workspace_dir: str):
@@ -424,6 +542,14 @@ def _clean_dependencies(deps: list[str], language: str) -> list[str]:
     """Drop empty or obviously invalid dependency names."""
     cleaned = []
     invalid = {"python", "python3", "node", "javascript", "js", language.lower()}
+    
+    mapping = {
+        "opencv": "opencv-python",
+        "cv2": "opencv-python",
+        "opencv-python": "opencv-python",
+        "pillow": "Pillow",
+        "pil": "Pillow"
+    }
 
     for dep in deps or []:
         dep_name = str(dep).strip()
@@ -431,6 +557,8 @@ def _clean_dependencies(deps: list[str], language: str) -> list[str]:
             continue
         if dep_name.lower() in invalid:
             continue
-        cleaned.append(dep_name)
+            
+        mapped_name = mapping.get(dep_name.lower(), dep_name)
+        cleaned.append(mapped_name)
 
     return cleaned
