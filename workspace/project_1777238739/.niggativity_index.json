@@ -1,0 +1,9 @@
+{
+  ".task_lock.json": {
+    "summary": "This is a simple JSON configuration file used to specify the programming language associated with a task or project.",
+    "classes": [],
+    "functions": [],
+    "imports": [],
+    "hash": "cd1172822058942e8cd0a564fb6f64e4"
+  }
+}

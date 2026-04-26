@@ -122,7 +122,20 @@ def generate_plan(task: str, workspace_name: str = None) -> dict:
     print(f"Task: {task}")
     print(f"Workspace: {workspace_dir}")
 
+    lock_file = os.path.join(workspace_dir, ".task_lock.json")
+    
     plan = run_planner(task, workspace_dir)
+
+    if os.path.exists(lock_file):
+        with open(lock_file, "r") as f:
+            lock_data = json.load(f)
+        if lock_data.get("language") and plan.get("language") and plan.get("language") != lock_data.get("language"):
+            print(f"\n[PLANNER] Task drift detected! Expected {lock_data.get('language')}, got {plan.get('language')}. Regenerating...")
+            plan = run_planner(task + f" (MUST BE IN {lock_data.get('language')})", workspace_dir)
+            plan["language"] = lock_data.get("language")
+    else:
+        with open(lock_file, "w") as f:
+            json.dump({"language": plan.get("language")}, f)
 
     if "raw_response" in plan and "files" not in plan:
         print("\nPlanner produced non-structured output. Attempting recovery...")
@@ -414,6 +427,16 @@ def run(task: str, workspace_name: str = None, status_cb=None, max_iterations: i
 
 
 def _run_entrypoint(workspace_dir: str, entrypoint: str, language: str) -> str:
+    if entrypoint.endswith(".py"):
+        return run_python(workspace_dir, entrypoint, timeout=30)
+    elif entrypoint.endswith(".js"):
+        return run_node(workspace_dir, entrypoint, timeout=30)
+    elif entrypoint.endswith(".html"):
+        html_path = os.path.abspath(os.path.join(workspace_dir, entrypoint))
+        import webbrowser
+        webbrowser.open(f"file://{html_path}")
+        return f"[exec] open {entrypoint}\nexit_code: 0\nstdout:\nOpened in browser."
+
     if language == "python":
         return run_python(workspace_dir, entrypoint, timeout=30)
     if language in ("javascript", "node"):

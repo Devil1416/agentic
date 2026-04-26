@@ -53,7 +53,13 @@ def _init(allow_heavy: bool = True):
             import faiss
             from sentence_transformers import SentenceTransformer
 
-            _embedder = SentenceTransformer("all-MiniLM-L6-v2")
+            try:
+                _embedder = SentenceTransformer("all-MiniLM-L6-v2", local_files_only=True)
+            except Exception as e:
+                _USE_FAISS = False
+                _embedder = None
+                print(f"[memory] Offline model missing, memory disabled. ({e})")
+                return
             try:
                 dim = _embedder.get_embedding_dimension()
             except AttributeError:
@@ -75,9 +81,12 @@ def _init(allow_heavy: bool = True):
             _USE_FAISS = False
             try:
                 from sentence_transformers import SentenceTransformer
-
-                _embedder = SentenceTransformer("all-MiniLM-L6-v2")
-                print("[memory] sentence-transformers loaded without FAISS")
+                try:
+                    _embedder = SentenceTransformer("all-MiniLM-L6-v2", local_files_only=True)
+                    print("[memory] sentence-transformers loaded without FAISS")
+                except Exception:
+                    _embedder = None
+                    print("[memory] using keyword memory fallback")
             except ImportError:
                 _embedder = None
                 print("[memory] using keyword memory fallback")

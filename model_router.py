@@ -12,6 +12,7 @@ from typing import Generator, Optional
 import requests
 
 OLLAMA_BASE = "http://localhost:11434"
+_session = requests.Session()
 
 ROLE_MODELS = {
     "planner": ["gemma4:latest", "llama3:8b", "llama3", "mixtral:latest", "mixtral", "mistral:7b", "gemma:7b"],
@@ -43,7 +44,7 @@ def get_installed_models() -> list[str]:
         return _model_cache["models"]
 
     try:
-        resp = requests.get(f"{OLLAMA_BASE}/api/tags", timeout=5)
+        resp = _session.get(f"{OLLAMA_BASE}/api/tags", timeout=5)
         resp.raise_for_status()
         data = resp.json()
         models = [model["name"] for model in data.get("models", [])]
@@ -180,14 +181,14 @@ def _blocking_response(payload: dict) -> str:
     """Non-streaming Ollama call."""
     payload["stream"] = False
     try:
-        resp = requests.post(f"{OLLAMA_BASE}/api/generate", json=payload, timeout=300)
+        resp = _session.post(f"{OLLAMA_BASE}/api/generate", json=payload, timeout=300)
         resp.raise_for_status()
         return resp.json().get("response", "")
     except requests.exceptions.HTTPError as e:
         if e.response is not None and e.response.status_code == 500:
             print(f"[model_router] 500 error from {payload.get('model')}, retrying once...")
             time.sleep(2)
-            resp = requests.post(f"{OLLAMA_BASE}/api/generate", json=payload, timeout=300)
+            resp = _session.post(f"{OLLAMA_BASE}/api/generate", json=payload, timeout=300)
             resp.raise_for_status()
             return resp.json().get("response", "")
         raise
@@ -236,7 +237,7 @@ def _stream_with_fallback(candidates: list[str], role: str, prompt: str, system_
 def _stream_response(payload: dict, role: str = "", start: float = 0) -> Generator[str, None, None]:
     """Streaming Ollama call - yields tokens as they arrive."""
     payload["stream"] = True
-    with requests.post(f"{OLLAMA_BASE}/api/generate", json=payload, stream=True, timeout=300) as resp:
+    with _session.post(f"{OLLAMA_BASE}/api/generate", json=payload, stream=True, timeout=300) as resp:
         resp.raise_for_status()
         for line in resp.iter_lines():
             if line:

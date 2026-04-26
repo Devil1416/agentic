@@ -1,0 +1,103 @@
+/* frontend/src/styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+}
+
+header {
+    background: #5191d3;
+    color: white;
+    padding-top: 30px;
+    min-height: 70px;
+    border-bottom: #e8491d 3px solid;
+}
+
+header a {
+    color: #ffffff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+header li {
+    float: left;
+    display: inline;
+    padding: 0 20px 0 20px;
+}
+
+header #branding {
+    float: left;
+}
+
+header #branding h1 {
+    margin: 0;
+}
+
+header nav {
+    float: right;
+    margin-top: 10px;
+}
+
+header .highlight, header .current a {
+    color: #e8491d;
+    font-weight: bold;
+}
+
+header a:hover {
+    color: #cccccc;
+    font-weight: bold;
+}
+
+/* ToDo List */
+.todo-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 45px;
+}
+
+.todo-item {
+    border-bottom: #ccc solid 1px;
+    padding: 10px;
+    font-size: 18px;
+    transition: background 0.2s ease-out;
+}
+
+.todo-item:hover {
+    background: #f4f4f4;
+    cursor: pointer;
+}
+
+/* Form */
+form {
+    margin-top: 30px;
+}
+
+input[type="text"] {
+    width: 75%;
+    padding: 10px;
+    font-size: 18px;
+    border: 1px solid #ddd;
+}
+
+input[type="submit"] {
+    width: 20%;
+    background: #e8491d;
+    color: white;
+    padding: 10px;
+    font-size: 18px;
+    border: none;
+    cursor: pointer;
+}
+
+input[type="submit"]:hover {
+    background: #5191d3;
+}

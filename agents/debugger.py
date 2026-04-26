@@ -28,6 +28,8 @@ Diff format for edit_file_diff:
 +line to add
 
 RULES:
+- ONLY: fix imports, create missing files, fix syntax errors.
+- NEVER: run git, NEVER modify unrelated files.
 - Fix ONE issue at a time
 - Use minimal, targeted diffs
 - After fixing, output: {{"action": "done", "args": {{"result": "description of fix"}}}}
