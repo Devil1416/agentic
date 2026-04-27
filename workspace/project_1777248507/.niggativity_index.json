@@ -1,0 +1,9 @@
+{
+  "contract.json": {
+    "summary": "This file acts as a configuration contract defining the application's API base URL, defined API routes, and paths for static frontend assets.",
+    "classes": [],
+    "functions": [],
+    "imports": [],
+    "hash": "d70aceaaabc748ae664cf4571cb71abf"
+  }
+}

@@ -1,183 +1,181 @@
-# niggativity
+<div align="center">
 
-**Local-First Autonomous Coding Agent** — powered entirely by Ollama. Zero cloud dependencies.
+# ⚡ Niggativity 
 
-Conversational AI coding partner that plans, builds, executes, debugs, and refines code autonomously.
+**The Local-First Autonomous Coding Agent**  
+*Powered entirely by Ollama. Zero cloud dependencies. 100% Privacy.*
+
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?style=for-the-badge&logo=python)](https://www.python.org/)
+[![Ollama](https://img.shields.io/badge/Ollama-Local_LLM-white.svg?style=for-the-badge&logo=ollama)](https://ollama.ai/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+
+</div>
 
 ---
 
-## Quick Start
+Niggativity is your conversational AI coding partner that **plans, builds, executes, debugs, and refines** code entirely on your local machine. Forget copy-pasting code snippets—just tell it what you want, and watch it orchestrate the entire development lifecycle.
 
+## 🌟 Key Features
+
+- **🗣️ Conversational UI**: Talk to your agent naturally. No rigid syntax required.
+- **🧠 Intent Detection**: Auto-routes your requests to build, debug, discuss, or plan modes.
+- **🏗️ Full Build Pipeline**: Orchestrates a complete `Plan -> Build -> Execute -> Debug -> Judge -> Refine` loop.
+- **🔄 Auto-Healing & Debugging**: Automatically detects runtime errors, diagnoses them, and applies diff-based fixes.
+- **🚀 Real Execution**: Code is actually executed and tested within isolated workspaces, not just statically reasoned about.
+- **💾 Persistent Vector Memory**: FAISS-backed recall of past sessions, errors, and fixes.
+- **🛠️ Self-Improvement Mode**: Use `/improve` to have the system autonomously modify its own core architecture safely.
+- **🔒 100% Local**: Powered by Ollama. Your code never leaves your machine.
+
+---
+
+## 🚀 Quick Start
+
+Get up and running in minutes:
+
+### 1. Start Ollama
+Ensure you have [Ollama](https://ollama.ai/) installed and running.
 ```bash
-# 1. Make sure Ollama is running
 ollama serve
+```
 
-# 2. Pull models
-ollama pull llama3:8b
+### 2. Pull Required Models
+The agent utilizes a specialized mixture of models optimized for different tasks.
+```bash
+ollama pull gemma4:latest
+ollama pull mixtral:latest
 ollama pull deepseek-coder:6.7b
+ollama pull llama3:8b
+```
 
-# 3. Install deps
-cd d:\n1ggaman\agentic
+### 3. Install Dependencies
+Clone the repository and install the Python requirements.
+```bash
+git clone https://github.com/yourusername/agentic.git
+cd agentic
 pip install -r requirements.txt
+```
 
-# 4. Launch
+### 4. Launch the Agent
+Start the interactive CLI:
+```bash
 python cli.py
 ```
 
-Then just talk:
-```
-you> build me a REST API with Flask
-you> let's brainstorm a CLI tool idea
-you> fix the error in main.py
-you> show me what you built
-```
+### 5. Start Building
+Just talk to your agent!
+> **you>** *build me a REST API with Flask and a dark mode frontend*  
+> **you>** *let's brainstorm a CLI tool idea*  
+> **you>** *fix the error in main.py*  
 
 ---
 
-## Architecture
+## 🏗️ System Architecture
 
-```
-                    +-------------+
-                    |   CLI.py    |  <-- conversational interface
-                    +------+------+
-                           |
-                    +------+------+
-                    | CONVERSATION|  <-- intent classifier
-                    |   AGENT     |     (DISCUSS/EXECUTE/DEBUG/PLAN/SHOW)
-                    +------+------+
-                           |
-              +------------+-------------+
-              |                          |
-     +--------+--------+       +--------+--------+
-     |   DISCUSS MODE  |       | EXECUTE/DEBUG   |
-     |  brainstorm,    |       |                 |
-     |  clarify, chat  |       +--------+--------+
-     +-----------------+                |
-                                +-------+-------+
-                                | ORCHESTRATOR  |
-                                +-------+-------+
-                                        |
-          +--------+--------+--------+--+--+--------+
-          |        |        |        |     |        |
-       PLANNER  BUILDER  EXECUTOR  DEBUG  JUDGE  REFINER
-       llama3   deepseek subprocess deepseek llama3 mistral
-                                        |
-                                   +----+----+
-                                   |  MEMORY  |
-                                   |  FAISS   |
-                                   +----------+
-```
+Niggativity uses a multi-agent orchestration architecture. Each role is dynamically assigned to the best-suited local model.
 
-## CLI Commands
+```mermaid
+%%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1e293b', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#3b82f6', 'lineColor': '#475569', 'tertiaryColor': '#0f172a'}}}%%
+graph TD
+    %% Core Nodes
+    subgraph Core ["Core Execution"]
+        cli["cli.py (Interactive UI)"]
+        orch["orchestrator.py (Execution Loop)"]
+        router["model_router.py (LLM Routing)"]
+        registry["tool_registry.py (Tools)"]
+    end
 
-| Command    | Action                              |
-|------------|-------------------------------------|
-| `/help`    | Show all commands                   |
-| `/run`     | Execute current plan (skip confirm) |
-| `/plan`    | Show current plan                   |
-| `/files`   | List workspace files                |
-| `/show X`  | Display file contents               |
-| `/memory`  | Show stored memories                |
-| `/status`  | Session status                      |
-| `/history` | Conversation history                |
-| `/reset`   | Clear session                       |
-| `/exit`    | Quit                                |
+    %% Agents
+    subgraph Agents ["Agent Modules"]
+        planner["Planner (Architect)"]
+        builder["Builder (Coder)"]
+        debugger["Debugger (Fixer)"]
+        judge["Judge (Evaluator)"]
+        refiner["Refiner (Optimizer)"]
+        conv["Conversation Agent"]
+    end
 
-Or just type naturally — the system figures out your intent.
+    %% Tools
+    subgraph Tools ["Tool Integrations"]
+        exec["Python/Node Executor"]
+        fs["File System Hooks"]
+        git["Git Integration"]
+        diff["Diff Editor"]
+    end
 
----
+    %% Relationships
+    cli --> orch
+    cli --> conv
+    orch --> router
+    orch --> registry
+    
+    orch --> planner
+    orch --> builder
+    orch --> debugger
+    orch --> judge
+    orch --> refiner
 
-## Modes
-
-| Mode    | Triggered By                        | Behavior                        |
-|---------|-------------------------------------|---------------------------------|
-| DISCUSS | "let's think...", "what if..."      | Brainstorm, no code execution   |
-| EXECUTE | "build X", "create Y"               | Full build pipeline             |
-| DEBUG   | "not working", "fix the error"      | Auto-diagnose + diff fix        |
-| PLAN    | "how would you build...", "plan X"  | Generate plan only              |
-| SHOW    | "show me", "open main.py"           | Display files                   |
-
----
-
-## Project Structure
-
-```
-agentic/
-├── cli.py                  # Interactive conversational CLI
-├── main.py                 # Legacy CLI entry point
-├── orchestrator.py         # PLAN->BUILD->EXECUTE->DEBUG->JUDGE->REFINE loop
-├── model_router.py         # Ollama auto-detection + streaming
-├── tool_registry.py        # Tool registration + JSON parsing
-├── requirements.txt
-│
-├── agents/
-│   ├── conversation_agent.py  # Intent classification + brainstorm
-│   ├── planner.py             # Architecture planning (JSON)
-│   ├── builder.py             # Code generation (tool calls)
-│   ├── debugger.py            # Error analysis + diff fixes
-│   ├── judge.py               # Solution scoring
-│   └── refiner.py             # Code optimization
-│
-├── tools/
-│   ├── fs.py               # read_file, write_file, list_files
-│   ├── executor.py         # run_python, run_node, run_command
-│   └── diff_editor.py      # Unified diff patching
-│
-├── memory/
-│   └── vector_store.py     # FAISS + sentence-transformers (3-tier fallback)
-│
-├── session/
-│   └── session_manager.py  # Persistent session state
-│
-├── utils/
-│   └── command_parser.py   # Slash command + NL input router
-│
-├── workspace/              # Generated projects
-└── logs/                   # Session logs + memory
-    └── sessions/           # Persistent session files
+    orch --> exec
+    orch --> fs
+    orch --> git
+    orch --> diff
 ```
 
 ---
 
-## Key Features
+## 🤖 CLI Commands & Modes
 
-- **Conversational** — natural language, not command syntax
-- **Intent Detection** — auto-routes to build/debug/discuss/plan
-- **Human-in-the-Loop** — confirms before executing (bypass with /run)
-- **Streaming Output** — real-time token streaming from Ollama
-- **Persistent Sessions** — remembers goals, plans, conversation
-- **Auto-Debug** — detects errors and applies diff fixes
-- **Brainstorm Mode** — discuss ideas without running code
-- **File Explorer** — view what was built inline
-- **Vector Memory** — FAISS-backed recall of past errors/fixes
+### Interactive Commands
+| Command | Action |
+| --- | --- |
+| `/help` | Show all available commands |
+| `/run` | Execute the current plan immediately (skip confirmation) |
+| `/plan` | Show the current architectural plan |
+| `/files` | List all files in the current generated workspace |
+| `/show <file>` | Display the contents of a specific file |
+| `/improve` | Enter **Self-Improvement Mode** to autonomously modify the system |
+| `/capabilities` | List system capabilities (generated from self-knowledge) |
+| `/limitations` | List known system limitations |
+| `/memory` | Show stored FAISS memories |
+| `/history` | View the current conversation history |
+| `/reset` | Clear the session and start fresh |
+| `/exit` | Save session and quit |
 
----
-
-## Model Routing
-
-| Role         | Preferred Model         | Fallback                   |
-|--------------|------------------------|----------------------------|
-| Planner      | `llama3:8b`            | mistral -> gemma           |
-| Builder      | `deepseek-coder:6.7b`  | codellama -> llama3        |
-| Debugger     | `deepseek-coder:6.7b`  | codellama -> llama3        |
-| Judge        | `llama3:8b`            | mistral -> gemma           |
-| Refiner      | `mistral:7b`           | llama3 -> gemma            |
-| Conversation | `llama3:8b`            | (uses planner role)        |
-
----
-
-## Hardware
-
-- **RAM**: 16GB (sequential agents, 1 model at a time)
-- **GPU**: Optional, faster inference
-- **Disk**: ~10GB for models
+### Dynamic Modes
+The Conversation Agent detects your intent and switches modes seamlessly:
+- **`DISCUSS`**: Brainstorming and architecture planning without running code.
+- **`EXECUTE`**: Triggers the full `Plan -> Build -> Execute` pipeline.
+- **`DEBUG`**: Auto-diagnoses reported errors and applies diff fixes.
+- **`PLAN`**: Generates a JSON-based architectural plan for review.
+- **`SHOW`**: Opens the file explorer.
 
 ---
 
-## Design Principles
+## 🧩 Model Routing Strategy
 
-- Feels like chatting with a developer, not operating a machine
-- Deterministic > clever
-- Real execution > fake reasoning
-- Sequential agents to respect RAM limits
-- Ollama only, zero cloud
+To balance speed and intelligence on consumer hardware, Niggativity routes tasks to specialized models:
+
+| Agent Role | Preferred Local Model | Purpose |
+| --- | --- | --- |
+| **Planner** | `gemma4:latest` | Fast, creative architectural planning |
+| **Builder** | `mixtral:latest` | Heavy-lifting code generation and implementation |
+| **Debugger** | `deepseek-coder:6.7b` | Precision log analysis and unified diff patching |
+| **Judge** | `llama3:8b` | Strict validation against the Interface Contract |
+| **Refiner** | `mixtral:latest` | Code optimization and polish |
+| **Chat** | `gemma4:latest` | Lightning-fast conversational responses |
+
+*(Models will automatically fallback to available installed models if the preferred ones are missing).*
+
+---
+
+## 💡 Design Principles
+
+1. **Deterministic Over Clever**: Core pipeline logic relies on deterministic AST parsing and strict JSON schemas, not fragile LLM reasoning.
+2. **Real Execution**: If the code doesn't compile and run successfully in the local workspace, it fails the judge.
+3. **Hardware Respectful**: Agents run sequentially to respect standard 16GB RAM limits. Only one model is loaded into VRAM at a time.
+4. **Zero Cloud**: 100% of processing happens locally. Ultimate privacy.
+
+---
+
+<div align="center">
+  <i>Built with ❤️ for autonomous AI developers.</i>
+</div>

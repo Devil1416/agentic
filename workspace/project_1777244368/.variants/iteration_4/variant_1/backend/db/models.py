@@ -1,0 +1,11 @@
+from flask_sqlalchemy import SQLAlchemy
+from sqlite3 import dbapi2 as sqlite3
+
+db = SQLAlchemy()
+
+class TodoItem(db.Model):
+    __tablename__ = 'todoitems'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    description = db.Column(db.String(200), nullable=False)
+    is_completed = db.Column(db.Boolean, default=False)

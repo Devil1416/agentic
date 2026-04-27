@@ -2,9 +2,12 @@
 agents/judge.py — Solution evaluation agent.
 
 Compares build variants, evaluates quality, and decides next action.
+After scoring, performs strict cross-file validation against contract.json.
 """
 
 import json
+import os
+import re
 from model_router import call_model
 
 JUDGE_SYSTEM = """You are a senior code reviewer and quality judge.
@@ -33,7 +36,8 @@ Verdicts:
 """
 
 
-def run_judge(task: str, variants: list[dict], execution_results: list[str]) -> dict:
+def run_judge(task: str, variants: list[dict], execution_results: list[str],
+              workspace_dir: str = None) -> dict:
     """
     Judge the quality of build variants.
 
@@ -41,6 +45,7 @@ def run_judge(task: str, variants: list[dict], execution_results: list[str]) -> 
         task: Original user task.
         variants: List of build variant summaries.
         execution_results: Execution output for each variant.
+        workspace_dir: Variant workspace root to validate against contract.
 
     Returns:
         Verdict dict with decision and reasoning.
@@ -93,7 +98,6 @@ Output your verdict as JSON."""
         print(f"   Verdict: {verdict.get('verdict', '?')}")
         print(f"   Reasoning: {verdict.get('reasoning', 'N/A')[:100]}")
     else:
-        # Default to refine if can't parse
         verdict = {
             "verdict": "refine",
             "best_variant": 1,
@@ -103,7 +107,112 @@ Output your verdict as JSON."""
             "suggestions": [],
         }
 
+    # ── Strict cross-file contract validation ────────────────────────────
+    if workspace_dir:
+        mismatches = _validate_contract(workspace_dir, variants, verdict)
+        if mismatches:
+            verdict["verdict"] = "refine"
+            verdict["issues"] = verdict.get("issues", []) + mismatches
+            verdict["suggestions"] = verdict.get("suggestions", []) + [
+                f"Fix mismatch: {m}" for m in mismatches
+            ]
+            print(f"   [JUDGE] Contract violations found ({len(mismatches)}):")
+            for m in mismatches:
+                print(f"      ✗ {m}")
+        else:
+            print(f"   [JUDGE] Contract validation passed ✓")
+    # ─────────────────────────────────────────────────────────────────────
+
     return verdict
+
+
+def _validate_contract(workspace_dir: str, variants: list[dict], verdict: dict) -> list[str]:
+    """Perform strict cross-file validation against contract.json.
+
+    Checks:
+    1. html_ids exist in HTML AND are referenced in JS
+    2. api_routes are declared as @app.route in Flask files
+    3. JS fetch calls use api_base (not relative paths)
+    4. script/src/href references match static_files and exist on disk
+    """
+    contract_path = os.path.join(workspace_dir, "contract.json")
+    if not os.path.exists(contract_path):
+        return ["contract.json missing — cannot validate"]
+
+    try:
+        with open(contract_path, "r", encoding="utf-8") as f:
+            contract = json.load(f)
+    except Exception as e:
+        return [f"contract.json unreadable: {e}"]
+
+    mismatches = []
+    api_base = contract.get("api_base", "http://localhost:5000")
+    api_routes = contract.get("api_routes", [])
+    static_files = contract.get("static_files", {})
+    html_ids = contract.get("html_ids", [])
+
+    # Collect file contents
+    html_content = ""
+    js_content = ""
+    py_content = ""
+
+    for root, dirs, files in os.walk(workspace_dir):
+        dirs[:] = [d for d in dirs if d not in {".variants", ".git", "__pycache__", "node_modules"}]
+        for fn in files:
+            fpath = os.path.join(root, fn)
+            try:
+                text = open(fpath, "r", encoding="utf-8", errors="ignore").read()
+            except Exception:
+                continue
+            if fn.endswith(".html"):
+                html_content += text + "\n"
+            elif fn.endswith(".js"):
+                js_content += text + "\n"
+            elif fn.endswith(".py"):
+                py_content += text + "\n"
+
+    # 1. Validate html_ids exist in HTML
+    if html_ids:
+        for hid in html_ids:
+            if f'id="{hid}"' not in html_content and f"id='{hid}'" not in html_content:
+                mismatches.append(f"html_id '{hid}' not found in any HTML file")
+
+    # 2. Validate html_ids are referenced in JS
+    if html_ids:
+        for hid in html_ids:
+            if html_content and (f'getElementById("{hid}")' not in js_content
+                                 and f"getElementById('{hid}')" not in js_content
+                                 and f'querySelector("#' + hid + '"' not in js_content
+                                 and f"querySelector('#" + hid + "'" not in js_content):
+                mismatches.append(f"html_id '{hid}' not referenced in any JS file")
+
+    # 3. Validate api_routes are declared as @app.route in Flask files
+    if api_routes:
+        for route in api_routes:
+            # strip variable segments for basic route matching
+            base_route = re.sub(r"/<[^>]+>", "", route).rstrip("/") or "/"
+            if py_content and f'@app.route("{base_route}"' not in py_content and f"@app.route('{base_route}'" not in py_content:
+                mismatches.append(f"api_route '{route}' not declared as @app.route in any Python file")
+
+    # 4. Validate JS fetch calls use api_base, not relative paths
+    fetch_calls = re.findall(r'fetch\(([^)]+)\)', js_content)
+    for call in fetch_calls:
+        call_stripped = call.strip().strip('"\'')
+        if call_stripped.startswith("/") and not call_stripped.startswith(api_base):
+            mismatches.append(
+                f"JS fetch uses relative path '{call_stripped[:60]}' — must use api_base '{api_base}'"
+            )
+
+    # 5. Validate static_files exist on disk and are referenced correctly
+    for logical_name, rel_path in static_files.items():
+        abs_path = os.path.join(workspace_dir, rel_path)
+        if not os.path.exists(abs_path):
+            mismatches.append(f"static_file '{logical_name}' expected at '{rel_path}' but file does not exist")
+        # Check HTML references the exact rel_path
+        if html_content and rel_path not in html_content:
+            mismatches.append(f"HTML does not reference static_file path '{rel_path}' (logical: {logical_name})")
+
+    return mismatches
 
 
 def _heuristic_verdict(execution_results: list[str]) -> dict:
@@ -140,7 +249,6 @@ def _heuristic_verdict(execution_results: list[str]) -> dict:
 
 def _extract_verdict(text: str) -> dict | None:
     """Extract verdict JSON from judge output."""
-    import re
 
     # Try fenced JSON
     fenced = re.findall(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)

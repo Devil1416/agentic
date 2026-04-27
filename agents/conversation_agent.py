@@ -94,7 +94,9 @@ Be natural and conversational. You're a developer colleague, not a robot."""
 
 
 def classify_intent(user_input: str, conversation_context: str = "",
-                    current_goal: str = None, current_mode: str = "discuss") -> dict:
+                    current_goal: str = None, current_mode: str = "discuss",
+                    self_improvement_mode: bool = False,
+                    **kwargs) -> dict:
     """
     Classify user intent and generate appropriate response.
 
@@ -103,6 +105,7 @@ def classify_intent(user_input: str, conversation_context: str = "",
         conversation_context: Recent conversation history.
         current_goal: Current active goal (if any).
         current_mode: Current session mode.
+        self_improvement_mode: Whether self improvement is active.
 
     Returns:
         Dict with mode, response, and optional goal/target.
@@ -131,10 +134,14 @@ User says: {user_input}
 
 Classify the intent and respond. Output ONLY the JSON block."""
 
+    system_prompt = CONVERSATION_SYSTEM
+    if self_improvement_mode:
+        system_prompt += "\n\nYou are modifying your own system. Only patch specific functions using edit_file_diff. Do not rewrite entire files. Preserve all unrelated logic."
+
     response = call_model(
         role="planner",  # Use planner model for reasoning
         prompt=prompt,
-        system_prompt=CONVERSATION_SYSTEM,
+        system_prompt=system_prompt,
         temperature=0.4,
     )
 

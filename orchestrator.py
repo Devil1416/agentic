@@ -154,7 +154,7 @@ def generate_plan(task: str, workspace_name: str = None) -> dict:
     return plan
 
 
-def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_iterations: int | None = None):
+def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_iterations: int | None = None, is_self_improve: bool = False):
     """Execute a generated plan."""
     init_tools()
 
@@ -163,6 +163,9 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
             status_cb(message)
         print(message)
 
+    if plan is None:
+        print("[ERROR] Planner failed")
+        return None
     iteration_limit = _resolve_iteration_limit(plan, max_iterations)
 
     print(f"\n{'=' * 60}")
@@ -188,6 +191,8 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
             _install_node_deps(deps, workspace_dir)
 
     best_result = None
+    # consecutive-error tracking: {variant_id: last_error_str}
+    _last_errors: dict[int, str] = {}
 
     iteration = 0
     while iteration_limit == 0 or iteration < iteration_limit:
@@ -219,7 +224,45 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
                 variant_id,
                 seed_from_workspace=(iteration == 0),
             )
-            variant = run_builder(plan, variant_workspace, variant_id=variant_id, status_cb=log_status)
+
+            # ── Skip builder if all plan files already present (iter > 1) ──
+            if iteration > 0:
+                existing = _get_project_files(variant_workspace)
+                plan_paths = [
+                    (f.get("path") if isinstance(f, dict) else f)
+                    for f in plan.get("files", [])
+                ]
+                all_present = all(p and p in existing for p in plan_paths)
+                if all_present:
+                    log_status(f"[BUILDER] Variant #{variant_id}: all files present, skipping build")
+                    variant = {"files_written": existing, "errors": []}
+                    variant["workspace_dir"] = variant_workspace
+                    variants.append(variant)
+                    variant_workspaces.append(variant_workspace)
+                    continue
+            # ────────────────────────────────────────────────────────────────
+
+            # ── Consecutive-error protection: call refiner instead of rebuild ──
+            prev_error = _last_errors.get(variant_id)
+            if prev_error is not None:
+                # We'll check after execution whether error repeated
+                pass
+            # ─────────────────────────────────────────────────────────────────
+
+            variant = run_builder(plan, variant_workspace, variant_id=variant_id, status_cb=log_status, is_self_improve=is_self_improve)
+
+            # ── Contract-missing halt: re-invoke planner then retry builder ──
+            contract_halt_errors = [e for e in variant.get("errors", []) if "contract.json missing" in e]
+            if contract_halt_errors:
+                log_status("[ORCHESTRATOR] Builder halted: contract.json missing. Re-invoking planner...")
+                from agents.planner import run_planner as _rerun_planner
+                plan = _rerun_planner(task, workspace_dir)
+                if plan:
+                    log_status("[ORCHESTRATOR] contract.json regenerated. Retrying builder...")
+                    variant = run_builder(plan, variant_workspace, variant_id=variant_id, status_cb=log_status, is_self_improve=is_self_improve)
+                else:
+                    log_status("[ORCHESTRATOR] Planner failed to regenerate contract. Aborting variant.")
+            # ────────────────────────────────────────────────────────────────
             variant["workspace_dir"] = variant_workspace
             variants.append(variant)
             variant_workspaces.append(variant_workspace)
@@ -250,8 +293,15 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
                 execution_results.append(f"Error: Missing required files.")
                 continue
 
-            log_status(f"\n[EXECUTOR] Executing variant #{variant_id}...")
-            exec_result = _run_entrypoint(variant_workspace, entrypoint, language)
+            if is_self_improve:
+                log_status(f"\n[EXECUTOR] Skipping execution in self-improvement mode.")
+                if variant.get("errors"):
+                    exec_result = "Error: Patch rejected during build.\n" + "\n".join(variant["errors"])
+                else:
+                    exec_result = "Exit code 0: Skipped execution."
+            else:
+                log_status(f"\n[EXECUTOR] Executing variant #{variant_id}...")
+                exec_result = _run_entrypoint(variant_workspace, entrypoint, language)
 
             # --- AUTO-INSTALL & SELF-REPAIR ---
             if "ModuleNotFoundError:" in exec_result:
@@ -314,7 +364,7 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
             continue
 
         if len(variants) > 1 and execution_results:
-            verdict = run_judge(task, variants, execution_results)
+            verdict = run_judge(task, variants, execution_results, workspace_dir=chosen_workspace)
             iter_log["judge"] = verdict
             best_variant_idx = max(0, min(len(variants) - 1, verdict.get("best_variant", 1) - 1))
             chosen_workspace = variant_workspaces[best_variant_idx]
@@ -328,7 +378,8 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
                 refine_result = run_refiner(
                     chosen_workspace,
                     _get_project_files(chosen_workspace),
-                    verdict.get("suggestions", []),
+                    suggestions=verdict.get("suggestions", []),
+                    mismatches=verdict.get("issues", []),
                 )
                 iter_log["refine"] = refine_result
 
@@ -388,6 +439,23 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
             "workspace": workspace_dir,
         }
 
+        # ── Consecutive-error protection ──────────────────────────────────
+        current_error_sig = (execution_results[0][:300] if execution_results else "").strip()
+        for vid in range(1, num_variants + 1):
+            prev = _last_errors.get(vid, "")
+            if prev and prev == current_error_sig:
+                log_status(f"[ORCHESTRATOR] Same error repeated for variant #{vid}. Calling refiner directly.")
+                chosen_for_refine = variant_workspaces[vid - 1] if vid <= len(variant_workspaces) else chosen_workspace
+                run_refiner(
+                    chosen_for_refine,
+                    _get_project_files(chosen_for_refine),
+                    mismatches=[f"Repeated execution error: {current_error_sig[:200]}"],
+                )
+                _last_errors[vid] = ""  # reset so we don't loop again
+            else:
+                _last_errors[vid] = current_error_sig
+        # ─────────────────────────────────────────────────────────────────
+
         if iteration_limit != 0 and iteration >= iteration_limit - 1:
             log_status("\n[EXECUTOR] Max iterations reached. Stopping auto-continue.")
             break
@@ -418,12 +486,12 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
     return best_result
 
 
-def run(task: str, workspace_name: str = None, status_cb=None, max_iterations: int | None = None):
+def run(task: str, workspace_name: str = None, status_cb=None, max_iterations: int | None = None, is_self_improve: bool = False):
     """Plan and execute a task end-to-end."""
     plan = generate_plan(task, workspace_name=workspace_name)
     if "error" in plan:
         return plan
-    return execute_plan(plan, task, plan["workspace_dir"], status_cb=status_cb, max_iterations=max_iterations)
+    return execute_plan(plan, task, plan["workspace_dir"], status_cb=status_cb, max_iterations=max_iterations, is_self_improve=is_self_improve)
 
 
 def _run_entrypoint(workspace_dir: str, entrypoint: str, language: str) -> str:
@@ -470,12 +538,17 @@ def _get_project_files(workspace_dir: str) -> list[str]:
         for root, dirs, filenames in os.walk(workspace_dir):
             dirs[:] = [dirname for dirname in dirs if dirname not in IGNORED_DIRS and not dirname.startswith(".")]
             for filename in filenames:
-                files.append(os.path.relpath(os.path.join(root, filename), workspace_dir))
+                files.append(os.path.relpath(os.path.join(root, filename), workspace_dir).replace("\\", "/"))
     return sorted(files)
 
 
 def _prepare_variant_workspace(workspace_dir: str, iteration: int, variant_id: int, seed_from_workspace: bool) -> str:
-    """Create a variant sandbox for competitive builds."""
+    """Create a variant sandbox for competitive builds.
+
+    Always copies all files from base workspace_dir into variant_dir
+    (regardless of seed_from_workspace / iteration) so that contract.json
+    and any other base files are available before the builder runs.
+    """
     variant_dir = os.path.join(
         workspace_dir,
         VARIANTS_DIRNAME,
@@ -490,8 +563,8 @@ def _prepare_variant_workspace(workspace_dir: str, iteration: int, variant_id: i
         shutil.rmtree(variant_dir, onerror=force_remove)
     os.makedirs(variant_dir, exist_ok=True)
 
-    if seed_from_workspace:
-        _copy_project_tree(workspace_dir, variant_dir)
+    # Always seed from workspace so contract.json is always present
+    _copy_project_tree(workspace_dir, variant_dir)
 
     return variant_dir
 

@@ -62,13 +62,25 @@ def _normalize_workspace_path(path: str, workspace_dir: str) -> str:
     return candidate
 
 
-def run_builder(plan: dict, workspace_dir: str, variant_id: int = 1, status_cb=None) -> dict:
+def run_builder(plan: dict, workspace_dir: str, variant_id: int = 1, status_cb=None, is_self_improve: bool = False) -> dict:
     files = plan.get("files", [])
     deps = plan.get("dependencies", [])
     language = plan.get("language", "python")
 
     files_written = []
     errors = []
+
+    # Enforce contract
+    contract_path = os.path.join(workspace_dir, "contract.json")
+    if not os.path.exists(contract_path):
+        err = "contract.json missing. Builder halted. Request planner to regenerate it."
+        print(f"   ❌ {err}")
+        return {"files_written": [], "errors": [err]}
+
+    with open(contract_path, "r", encoding="utf-8") as f:
+        contract_data = f.read()
+
+    shared_context = []
 
     print(f"\n{'=' * 60}")
     print(f"🔨 BUILDER #{variant_id} — Generating code...")
@@ -93,11 +105,68 @@ def run_builder(plan: dict, workspace_dir: str, variant_id: int = 1, status_cb=N
         else:
             print(f"   [BUILDER] Creating file: {rel_path}")
 
-        prompt = f'''Write the complete, production-ready code for the file: {path}
+        if is_self_improve:
+            # Self Improvement Mode: Generate unified diff
+            prompt = f'''Modify the following file using a Unified Diff format: {path}
+Purpose: {purpose}
+
+INTERFACE CONTRACT: {contract_data}
+
+Rules:
+1. You MUST output ONLY a valid unified diff (starting with --- and +++).
+2. NO full file rewrites.
+3. NO new file creation or deletion.
+4. DO NOT wrap in markdown.
+'''
+            response = call_model(role="builder", prompt=prompt, system_prompt="You are modifying your own system. Output ONLY a valid unified diff.", temperature=0.2)
+            content_resp = response.strip()
+            if content_resp.startswith("```"):
+                lines = content_resp.split("\n")
+                if len(lines) > 1 and lines[0].startswith("```"): lines = lines[1:]
+                if len(lines) > 0 and lines[-1].strip().startswith("```"): lines = lines[:-1]
+                content_resp = "\n".join(lines).strip()
+            
+            try:
+                from tools.diff_editor import edit_file_diff
+                import ast
+                # Write patch to temp file and validate syntax
+                temp_file = full_path + ".temp"
+                import shutil
+                if os.path.exists(full_path):
+                    shutil.copy2(full_path, temp_file)
+                else:
+                    open(temp_file, "w").close()
+                edit_file_diff(temp_file, content_resp)
+                
+                # Run ast.parse
+                if full_path.endswith(".py"):
+                    with open(temp_file, "r", encoding="utf-8") as tf:
+                        temp_code = tf.read()
+                    try:
+                        ast.parse(temp_code)
+                    except SyntaxError as e:
+                        raise Exception(f"SyntaxError in generated code: {e}")
+                
+                # If valid, replace original file
+                shutil.copy2(temp_file, full_path)
+                os.remove(temp_file)
+                files_written.append(rel_path)
+                shared_context.append({"file": path, "code": "diff applied"})
+                print(f"   [FILE PATCHED] {rel_path}")
+            except Exception as e:
+                err_msg = f"Failed to patch {rel_path}: {e}"
+                print(f"   ❌ Tool error (PATCH REJECTED): {err_msg}")
+                errors.append(err_msg)
+
+        else:
+            prompt = f'''Write the complete, production-ready code for the file: {path}
 Purpose: {purpose}
 Language: {language}
 Dependencies: {', '.join(deps) if deps else 'None'}
 Project Plan: {json.dumps(plan)}
+
+INTERFACE CONTRACT (strict, no deviation): 
+{contract_data}
 
 Rules:
 1. Provide ONLY the raw source code.
@@ -105,34 +174,40 @@ Rules:
 3. DO NOT output any explanations or text outside the code.
 4. Ensure all imports are correct and matches the filenames.
 5. Ensure required modules (e.g., parser, analyzer, utils) are imported correctly.
+6. HTML must use html_ids exactly.
+7. JS must reference html_ids and use fetch(api_base + route) - NO RELATIVE PATHS.
+8. All file paths in href/src must match static_files exactly.
+
+Previously Generated Files in this iteration:
+{json.dumps([{"file": sc["file"], "content_snippet": sc["code"][:200] + "..."} for sc in shared_context], indent=2)}
 '''
+            response = call_model(
+                role="builder",
+                prompt=prompt,
+                system_prompt="You are an expert software engineer. Output ONLY raw source code for the requested file. No explanations.",
+                temperature=0.2,
+            )
 
-        response = call_model(
-            role="builder",
-            prompt=prompt,
-            system_prompt="You are an expert software engineer. Output ONLY raw source code for the requested file. No explanations.",
-            temperature=0.2,
-        )
+            content_resp = response.strip()
+            if content_resp.startswith("```"):
+                lines = content_resp.split("\n")
+                if len(lines) > 1 and lines[0].startswith("```"):
+                    lines = lines[1:]
+                if len(lines) > 0 and lines[-1].strip().startswith("```"):
+                    lines = lines[:-1]
+                content_resp = "\n".join(lines).strip()
 
-        content_resp = response.strip()
-        if content_resp.startswith("```"):
-            lines = content_resp.split("\n")
-            if len(lines) > 1 and lines[0].startswith("```"):
-                lines = lines[1:]
-            if len(lines) > 0 and lines[-1].strip().startswith("```"):
-                lines = lines[:-1]
-            content_resp = "\n".join(lines).strip()
-
-        try:
-            os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            with open(full_path, "w", encoding="utf-8") as f2:
-                f2.write(content_resp)
-            files_written.append(rel_path)
-            print(f"   [FILE UPDATED] {rel_path}")
-        except Exception as e:
-            err_msg = f"Failed to write {rel_path}: {e}"
-            print(f"   ❌ Tool error: {err_msg}")
-            errors.append(err_msg)
+            try:
+                os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                with open(full_path, "w", encoding="utf-8") as f2:
+                    f2.write(content_resp)
+                files_written.append(rel_path)
+                shared_context.append({"file": path, "code": content_resp})
+                print(f"   [FILE UPDATED] {rel_path}")
+            except Exception as e:
+                err_msg = f"Failed to write {rel_path}: {e}"
+                print(f"   ❌ Tool error: {err_msg}")
+                errors.append(err_msg)
 
     print(f"   ✅ Builder #{variant_id} done ({len(files_written)} files)")
     return {"files_written": files_written, "errors": errors}

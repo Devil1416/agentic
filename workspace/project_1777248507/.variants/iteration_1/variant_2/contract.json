@@ -1,0 +1,12 @@
+{
+  "api_base": "http://localhost:5000",
+  "api_routes": [
+    "/api/todos",
+    "/api/todos/<id>"
+  ],
+  "static_files": {
+    "main_js": "frontend/src/app.js",
+    "main_css": "frontend/style.css"
+  },
+  "html_ids": []
+}

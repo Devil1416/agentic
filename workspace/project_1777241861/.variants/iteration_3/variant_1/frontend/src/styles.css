@@ -1,0 +1,39 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    color: #369;
+    font-size: 250%;
+}
+
+h2 {
+    color: #444;
+    font-weight: lighter;
+}
+
+.tasks {
+    margin: auto;
+    padding: 10px;
+    width: 80%;
+}
+
+.task {
+    border: 1px solid #999;
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+.task h3, .task p {
+    margin: 0;
+}
+
+.task button {
+    background-color: #f44336;
+    border: none;
+    color: white;
+    cursor: pointer;
+    float: right;
+    font-size: 18px;
+    padding: 5px 10px;
+}

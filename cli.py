@@ -28,9 +28,216 @@ from agents.conversation_agent import classify_intent, brainstorm, chat_respond,
 from memory.vector_store import search_memory, get_relevant_context
 from tools.fs import read_file, list_files
 from model_router import get_installed_models, pick_model
+import threading
+import shutil as _shutil
 
 WORKSPACE_BASE = os.path.join(ROOT, "workspace")
 
+# ─── ANSI Live Progress Display ────────────────────────────────────────────────
+
+_ANSI_UP   = "\033[{}A"
+_ANSI_CLEAR = "\033[2K\r"
+_RESET = "\033[0m"
+_BOLD  = "\033[1m"
+_DIM   = "\033[2m"
+_GREEN = "\033[32m"
+_CYAN  = "\033[36m"
+_YELLOW = "\033[33m"
+_BLUE  = "\033[34m"
+_MAGENTA = "\033[35m"
+_RED   = "\033[31m"
+
+
+def _bar(pct: float, width: int = 24) -> str:
+    filled = int(width * pct)
+    bar = "\u2588" * filled + "\u2591" * (width - filled)
+    return f"[{bar}] {int(pct * 100):3d}%"
+
+
+_SPINNER_FRAMES = ["\u280b", "\u2819", "\u2839", "\u2838", "\u283c", "\u2834", "\u2826", "\u2827", "\u2807", "\u280f"]
+
+
+class LiveProgress:
+    """
+    In-place ANSI progress display — exactly 8 fixed lines, redrawn on every
+    status_cb call using \\033[nA + \\033[2K so it never floods the terminal.
+    All output via sys.stdout.write(); no print() inside the block.
+    """
+
+    PHASES = ["Planning", "Building", "Executing", "Judging", "Debugging", "Refining"]
+    PHASE_KEYWORDS = {
+        "planner":        "Planning",
+        "plan":           "Planning",
+        "[planner]":      "Planning",
+        "[orchestrator]": "Planning",
+        "contract":       "Planning",
+        "builder":        "Building",
+        "[builder]":      "Building",
+        "build":          "Building",
+        "file updated":   "Building",
+        "[file updated]": "Building",
+        "creating file":  "Building",
+        "executor":       "Executing",
+        "[executor]":     "Executing",
+        "executing":      "Executing",
+        "judge":          "Judging",
+        "[judge]":        "Judging",
+        "evaluating":     "Judging",
+        "debugger":       "Debugging",
+        "[debugger]":     "Debugging",
+        "debug":          "Debugging",
+        "refiner":        "Refining",
+        "[refiner]":      "Refining",
+        "refine":         "Refining",
+        "patching":       "Refining",
+    }
+    PHASE_COLORS = {
+        "Planning":  _CYAN,
+        "Building":  _BLUE,
+        "Executing": _GREEN,
+        "Judging":   _YELLOW,
+        "Debugging": _MAGENTA,
+        "Refining":  _CYAN,
+    }
+
+    BLOCK_LINES = 8  # strict fixed height
+
+    def __init__(self, total_files: int = 0, max_iterations: int = 5):
+        self._lock = threading.Lock()
+        self.total_files = max(total_files, 1)
+        self.max_iterations = max_iterations
+        self.files_done = 0
+        self.current_iteration = 1
+        self.current_phase = "Planning"
+        self.current_file = ""
+        self.log: list[str] = []
+        self._rendered = False
+        self._active = True
+        self._spin_idx = 0
+
+    def _detect_phase(self, msg: str) -> str:
+        lower = msg.lower()
+        for keyword, phase in self.PHASE_KEYWORDS.items():
+            if keyword in lower:
+                return phase
+        return self.current_phase
+
+    def _extract_meta(self, msg: str) -> str:
+        """Parse iteration counter and current filename from a status message."""
+        import re
+        m = re.search(r'(?:creating file|file updated)[:\s]+([^\s\r\n]+)', msg, re.IGNORECASE)
+        if m:
+            self.current_file = m.group(1).strip()
+        m2 = re.search(r'(?:iteration)\s+(\d+)(?:\s*/\s*(\d+))?', msg, re.IGNORECASE)
+        if m2:
+            self.current_iteration = int(m2.group(1))
+            if m2.group(2):
+                self.max_iterations = int(m2.group(2))
+        return self.current_file
+
+    def update(self, msg: str):
+        """Called by status_cb on every agent status message."""
+        with self._lock:
+            if not self._active:
+                return
+            self.current_phase = self._detect_phase(msg)
+            self._extract_meta(msg)
+            lower = msg.lower()
+            if any(k in lower for k in ("file updated", "[file updated]", "creating file", "files_written")):
+                self.files_done = min(self.files_done + 1, self.total_files)
+            self.log.append(msg.strip())
+            if len(self.log) > 50:
+                self.log = self.log[-50:]
+            self._spin_idx = (self._spin_idx + 1) % len(_SPINNER_FRAMES)
+            self._redraw()
+
+    def _redraw(self):
+        """Erase exactly BLOCK_LINES lines upward and redraw the block."""
+        tw = max(_shutil.get_terminal_size((80, 24)).columns - 2, 40)
+
+        if self._rendered:
+            # move cursor up BLOCK_LINES rows
+            sys.stdout.write(f"\033[{self.BLOCK_LINES}A")
+
+        spinner = _SPINNER_FRAMES[self._spin_idx]
+        phase_color = self.PHASE_COLORS.get(self.current_phase, _CYAN)
+        pct = self.files_done / self.total_files
+        bar = _bar(pct, width=min(24, tw - 20))
+
+        # Build exactly BLOCK_LINES lines
+        lines = []
+
+        # line 1 — top border
+        lines.append(f"{_BOLD}{_CYAN}\u250c{'\u2500' * (tw - 2)}\u2510{_RESET}")
+
+        # line 2 — phase + spinner + iteration
+        spin_str = f"{phase_color}{spinner}{_RESET}"
+        phase_str = f"{phase_color}{_BOLD}{self.current_phase:<12}{_RESET}"
+        iter_str = f"{_YELLOW}{self.current_iteration}/{self.max_iterations}{_RESET}"
+        lines.append(f"{_CYAN}\u2502{_RESET}  {spin_str} {phase_str}  Iter: {iter_str}")
+
+        # line 3 — progress bar + current file
+        file_label = f"{_DIM}{self.current_file[:tw - 40]}{_RESET}" if self.current_file else ""
+        lines.append(f"{_CYAN}\u2502{_RESET}  {_GREEN}{bar}{_RESET}  {file_label}")
+
+        # line 4 — phase pills
+        pills = ""
+        for ph in self.PHASES:
+            col = self.PHASE_COLORS.get(ph, _CYAN) if ph == self.current_phase else _DIM
+            dot = "\u25cf" if ph == self.current_phase else "\u25cb"
+            pills += f" {col}{dot} {ph}{_RESET}"
+        lines.append(f"{_CYAN}\u2502{_RESET}{pills}")
+
+        # line 5 — separator
+        lines.append(f"{_CYAN}\u2502{_RESET}  {_DIM}{'\u2500' * (tw - 4)}{_RESET}")
+
+        # lines 6-7 — last 2 log entries
+        recent = self.log[-2:]
+        for i in range(2):
+            if i < len(recent):
+                entry = recent[i].replace("\r", "").replace("\n", " ")[:tw - 6]
+                lines.append(f"{_CYAN}\u2502{_RESET}  {_DIM}{entry}{_RESET}")
+            else:
+                lines.append(f"{_CYAN}\u2502{_RESET}")
+
+        # line 8 — bottom border
+        lines.append(f"{_BOLD}{_CYAN}\u2514{'\u2500' * (tw - 2)}\u2518{_RESET}")
+
+        # Ensure exactly BLOCK_LINES lines
+        lines = lines[:self.BLOCK_LINES]
+        while len(lines) < self.BLOCK_LINES:
+            lines.append("")
+
+        for line in lines:
+            sys.stdout.write(f"\033[2K\r{line}\n")
+        sys.stdout.flush()
+        self._rendered = True
+
+    def start(self):
+        """Reserve BLOCK_LINES blank lines then draw first frame."""
+        with self._lock:
+            sys.stdout.write("\n" * self.BLOCK_LINES)
+            sys.stdout.flush()
+            self._rendered = False
+            self._redraw()
+
+    def finish(self):
+        """Mark complete; leave the block visible."""
+        with self._lock:
+            self._active = False
+
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+
+def should_inject_self_context(user_input: str, intent: str, self_improvement_mode: bool) -> bool:
+    if not self_improvement_mode or intent == "EXECUTE":
+        return False
+    lower_input = user_input.lower()
+    if any(k in lower_input for k in ["what can you do", "capabilities", "features"]) or \
+       (intent == "DISCUSS" and any(k in lower_input for k in ["niggativity", "system", "agent", "how do you work"])):
+        return True
+    return False
 
 def print_banner():
     print(r"""
@@ -75,6 +282,16 @@ class CLI:
         self.session = SessionManager()
         self.running = True
         self._tools_initialized = False
+        self.last_workspace: str | None = None  # updated after every successful build
+        self.self_improvement_mode = False
+        self.self_context = ""
+        self._load_self_context()
+
+    def _load_self_context(self):
+        md_path = os.path.join(ROOT, "NIGGATIVITY_SELF.md")
+        if os.path.exists(md_path):
+            with open(md_path, "r", encoding="utf-8") as f:
+                self.self_context = f.read()
 
     def _ensure_tools(self):
         """Lazy-init the tool registry."""
@@ -170,12 +387,59 @@ class CLI:
         elif cmd == "/run":
             self._force_execute()
 
+        elif cmd == "/improve":
+            self.self_improvement_mode = True
+            goal = " ".join(args)
+            if not goal:
+                goal = "Improve the system."
+            core_files = [
+                "cli.py", "orchestrator.py", "model_router.py",
+                "agents/planner.py", "agents/builder.py", "agents/judge.py",
+                "tools/executor.py", "agents/conversation_agent.py"
+            ]
+            plan = {
+                "project_name": "Niggativity Self-Improvement",
+                "language": "python",
+                "entrypoint": "cli.py",
+                "files": [{"path": f, "purpose": "System core file"} for f in core_files],
+                "dependencies": []
+            }
+            self.session.set_plan(plan)
+            print("\n  [SELF] Entering Self-Improvement Mode.\n")
+            self._run_orchestrator(goal, override_workspace=ROOT, is_self_improve=True)
+            
+        elif cmd == "/capabilities":
+            if self.self_context:
+                import re
+                cap = re.search(r'## Current Capabilities\n(.*?)(?=\n##|$)', self.self_context, re.DOTALL)
+                hist = re.search(r'## Improvement History\n(.*?)(?=\n##|$)', self.self_context, re.DOTALL)
+                print("\nCurrent Capabilities:")
+                print(cap.group(1).strip() if cap else "None")
+                print("\nImprovement History:")
+                print(hist.group(1).strip() if hist else "None\n")
+            else:
+                print("\n  [SELF] NIGGATIVITY_SELF.md not found.\n")
+                
+        elif cmd == "/limitations":
+            if self.self_context:
+                import re
+                lim = re.search(r'## Known Limitations\n(.*?)(?=\n##|$)', self.self_context, re.DOTALL)
+                print("\nKnown Limitations:")
+                print(lim.group(1).strip() if lim else "None\n")
+            else:
+                print("\n  [SELF] NIGGATIVITY_SELF.md not found.\n")
+
         else:
             print(f"\n  Unknown command: {cmd}")
             print(f"  Type /help for available commands.\n")
 
     def _handle_message(self, user_input: str):
         """Handle natural language input through the conversation agent."""
+        # Fix 4: strip leading semicolons / shell artefacts
+        user_input = user_input.lstrip(";: ").strip()
+        if not user_input:
+            return
+
         self.session.add_message("user", user_input)
 
         # Get conversation context
@@ -184,20 +448,34 @@ class CLI:
         current_mode = self.session.state.get("mode", "discuss")
 
         # Classify intent
+        result = None
         try:
             result = classify_intent(
                 user_input,
                 conversation_context=context,
                 current_goal=current_goal,
                 current_mode=current_mode,
+                last_project_path=self.last_workspace,
+                self_improvement_mode=self.self_improvement_mode,
             )
         except Exception as e:
             print(f"\n  [error] Intent classification failed: {e}")
-            print("  Treating as discussion...\n")
-            result = {"mode": "DISCUSS", "response": None}
+            # Fix 3: default to EXECUTE so we always try to run the planner
+            print("  Defaulting to EXECUTE mode...\n")
+            result = {"mode": "EXECUTE", "goal": user_input, "response": ""}
 
-        mode = result.get("mode", "DISCUSS").upper()
+        if result is None:
+            result = {"mode": "EXECUTE", "goal": user_input, "response": ""}
+
+        mode = result.get("mode", "EXECUTE").upper()
         response = result.get("response", "")
+
+        if self.self_context:
+            if should_inject_self_context(user_input, mode, self.self_improvement_mode):
+                print("  [SELF] context injected")
+                context += "\n\n[SYSTEM SELF-CONTEXT]\n" + self.self_context
+            else:
+                print("  [SELF] context skipped")
 
         lower_input = user_input.lower()
         if any(keyword in lower_input for keyword in ["build", "create", "implement", "fix", "run"]):
@@ -285,6 +563,7 @@ class CLI:
         elif confirm in ("plan", "p"):
             self._handle_plan_mode(goal, "")
             return
+        # Fix 5: anything other than n/no/plan/p is treated as confirmation
 
         # Execute
         self.session.add_message("assistant", f"Executing: {goal}")
@@ -360,7 +639,7 @@ class CLI:
         print(f"\n  [PLANNER] Creating plan for: {goal}\n")
 
         self._ensure_tools()
-        workspace = self._get_workspace()
+        workspace = override_workspace if override_workspace else self._get_workspace()
 
         from agents.planner import run_planner
         plan = run_planner(goal, workspace)
@@ -519,25 +798,69 @@ class CLI:
         self.session.add_message("assistant", f"Force-executing: {goal}")
         self._run_orchestrator(goal)
 
-    def _run_orchestrator(self, goal: str):
-        """Run the full orchestration pipeline."""
+    def _run_orchestrator(self, goal: str, override_workspace: str = None, is_self_improve: bool = False):
+        """Run the full orchestration pipeline with live progress display."""
         self._ensure_tools()
-        workspace = self._get_workspace()
+        workspace = override_workspace if override_workspace else self._get_workspace()
 
-        print()
-        print("  " + "=" * 56)
-        print("  [NIGGATIVITY] Autonomous build starting...")
-        print("  " + "=" * 56)
-        print()
+        MAX_ITER = 5
+
+        # Estimate file count from session plan (fallback=6)
+        plan = self.session.state.get("current_plan", {})
+
+        # Fix 2: guard against None plan before dereferencing
+        if plan is None:
+            print("[ERROR] Planner failed — no plan generated. Aborting execution.")
+            return
+
+        print(f"[DEBUG] Plan generated: {bool(plan)}")
+
+        total_files = len(plan.get("files", [])) * 2 or 6  # x2 for 2 variants
+
+        progress = LiveProgress(total_files=total_files, max_iterations=MAX_ITER)
+        progress.start()
+
+        def status_cb(msg: str):
+            progress.update(msg)
 
         try:
-            from orchestrator import run as orchestrator_run
-            result = orchestrator_run(goal, workspace_name=os.path.basename(workspace))
+            if is_self_improve:
+                from orchestrator import execute_plan
+                result = execute_plan(
+                    plan,
+                    goal,
+                    workspace,
+                    status_cb=status_cb,
+                    max_iterations=MAX_ITER,
+                    is_self_improve=True
+                )
+                if result and result.get("verdict", {}).get("verdict") == "accept":
+                    md_path = os.path.join(ROOT, "NIGGATIVITY_SELF.md")
+                    with open(md_path, "a", encoding="utf-8") as f:
+                        from datetime import datetime
+                        f.write(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M')}]\nmodified: core files\nsummary: {goal}\n")
+                    print("  [SELF] niggativity updated successfully")
+                    self._load_self_context()
+            else:
+                from orchestrator import run as orchestrator_run
+                result = orchestrator_run(
+                    goal,
+                    workspace_name=os.path.basename(workspace),
+                    status_cb=status_cb,
+                    max_iterations=MAX_ITER,
+                )
+
+            progress.finish()
+            # Move past the progress block
+            sys.stdout.write("\n")
 
             if result:
                 verdict = result.get("verdict", {})
                 self.session.set_mode("discuss")
                 self.session.increment_iteration()
+
+                # Update last_workspace so classify_intent stays current
+                self.last_workspace = result.get("workspace", workspace)
 
                 score = verdict.get("score", "?")
                 v = verdict.get("verdict", "unknown")
@@ -549,7 +872,6 @@ class CLI:
                 # Update plan if we got one
                 plan = self.session.state.get("current_plan")
                 if not plan:
-                    # Try to infer from workspace
                     files = self._list_workspace_files(workspace)
                     if files:
                         self.session.set_plan({
@@ -565,9 +887,11 @@ class CLI:
                 print("\n  Build completed (no result returned).\n")
 
         except KeyboardInterrupt:
+            progress.finish()
             print("\n\n  Build interrupted.\n")
             self.session.add_message("assistant", "Build interrupted by user.")
         except Exception as e:
+            progress.finish()
             print(f"\n  Build error: {e}\n")
             self.session.add_message("assistant", f"Build error: {e}")
             import traceback

@@ -126,6 +126,76 @@ Remember to wrap your response in the exact format shown in the system prompt.""
         print(f"   Files: {len(plan.get('files', []))}")
         print(f"   Entry: {plan.get('entrypoint', 'N/A')}")
         print(f"   Lang:  {plan.get('language', 'N/A')}")
+
+        # Explicitly define contract — always regenerated fresh, never reused
+        import os
+        import re
+
+        # ── Delete any stale contract from a previous task ──────────────────
+        contract_path = os.path.join(workspace_dir, "contract.json")
+        if os.path.exists(contract_path):
+            os.remove(contract_path)
+            print(f"   [PLANNER] Removed stale contract.json — regenerating fresh")
+        # ───────────────────────────────────────────────────────────────────
+
+        contract_prompt = f"""Based on this project plan, define the strict interface contract.
+Plan: {json.dumps(plan)}
+
+Output ONLY a JSON object with this EXACT structure (no explanations, no markdown blocks):
+{{
+  "api_base": "http://localhost:5000",
+  "api_routes": ["/api/resource", "/api/resource/<id>"],
+  "static_files": {{
+    "main_js": "frontend/app.js",
+    "main_css": "frontend/style.css"
+  }},
+  "html_ids": ["element-id-1", "element-id-2"]
+}}
+
+Rules:
+- api_routes: list EVERY explicit Flask route the backend will expose (do NOT infer, define all)
+- static_files: map each logical asset name to its EXACT relative path as listed in the plan files
+- html_ids: list EVERY HTML element id that JS will reference
+- api_base must always be "http://localhost:5000"
+- Do not omit or infer anything — be exhaustive
+"""
+        contract_resp = call_model(
+            role="planner",
+            prompt=contract_prompt,
+            system_prompt="Output ONLY valid JSON. No markdown. No explanations.",
+            temperature=0.1,
+        )
+        try:
+            c_text = contract_resp.strip()
+            if c_text.startswith("```"):
+                c_lines = c_text.split("\n")
+                if len(c_lines) > 1 and c_lines[0].startswith("```"):
+                    c_lines = c_lines[1:]
+                if c_lines and c_lines[-1].strip().startswith("```"):
+                    c_lines = c_lines[:-1]
+                c_text = "\n".join(c_lines).strip()
+
+            contract_data = json.loads(c_text)
+
+            # Validate required keys before writing
+            required_keys = {"api_base", "api_routes", "static_files", "html_ids"}
+            missing_keys = required_keys - set(contract_data.keys())
+            if missing_keys:
+                raise ValueError(f"Contract missing required keys: {missing_keys}")
+
+            # Fallback html_ids if model returned empty list
+            if not contract_data.get("html_ids"):
+                has_html_files = any(f.get("path", "").endswith(".html") for f in plan.get("files", []))
+                if has_html_files:
+                    print("   [PLANNER] no html_ids defined — skipping ID validation")
+                contract_data["html_ids"] = []
+
+            with open(contract_path, "w", encoding="utf-8") as f:
+                json.dump(contract_data, f, indent=2)
+            print(f"   [PLANNER] Wrote fresh contract.json ({len(contract_data.get('api_routes', []))} routes, "
+                  f"{len(contract_data.get('html_ids', []))} html_ids)")
+        except Exception as e:
+            print(f"   [PLANNER] Failed to write contract.json: {e}")
     else:
         print("\n⚠ Could not parse plan, using raw response")
 

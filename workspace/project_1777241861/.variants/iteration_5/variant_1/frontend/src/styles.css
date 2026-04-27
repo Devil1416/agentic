@@ -1,0 +1,140 @@
+/* frontend/src/styles.css */
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+}
+
+header {
+    background: #5191d3;
+    color: white;
+    padding-top: 30px;
+    min-height: 70px;
+    border-bottom: #e8491d 3px solid;
+}
+
+header a {
+    color: #ffffff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+header li {
+    float: left;
+    display: inline;
+    padding: 0 20px 0 20px;
+}
+
+header #branding {
+    float: left;
+}
+
+header #branding h1 {
+    margin: 0;
+}
+
+header nav {
+    float: right;
+    margin-top: 10px;
+}
+
+header .highlight, header .current a {
+    color: #e8491d;
+    font-weight: bold;
+}
+
+header a:hover {
+    color: #cccccc;
+    font-weight: bold;
+}
+
+/* Style the form */
+form {
+    padding: 20px;
+    margin-top: 20px;
+}
+
+input[type="text"] {
+    width: 75%;
+    padding: 4% 1%;
+    float: left;
+    font-size: 16px;
+}
+
+/* Style the submit button */
+input[type="submit"] {
+    background: #e8491d;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+input[type="submit"]:hover {
+    background: #5191d3;
+}
+
+/* Clear floats */
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+/* Task list styling */
+ul.tasks {
+    padding: 0;
+    margin-top: 20px;
+}
+
+ul.tasks li {
+    border: #cccccc 1px solid;
+    padding: 10px;
+    margin-bottom: 2%;
+    list-style: none;
+    position: relative;
+}
+
+/* Task completion styling */
+input[type="checkbox"] {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+
+input[type="checkbox"] + label {
+    padding: 10px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+input[type="checkbox"]:checked + label {
+    text-decoration: line-through;
+    color: #999999;
+}
+
+/* Delete button styling */
+button.delete {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ff0000;
+    font-size: 24px;
+}
+
+button.delete:hover {
+    color: #e8491d;
+}

@@ -229,18 +229,28 @@ def install_dependencies(project_dir: str, language: str = "auto",
     results = []
 
     if language == "python":
-        req_file = os.path.join(project_dir, "requirements.txt")
+        venv_dir = os.path.join(project_dir, ".venv")
+        if not os.path.exists(venv_dir):
+            run_command(f'"{sys.executable}" -m venv .venv', cwd=project_dir, timeout=60)
+            
+        python_exe = os.path.join(venv_dir, "Scripts", "python.exe") if sys.platform == "win32" else os.path.join(venv_dir, "bin", "python")
+        if not os.path.exists(python_exe):
+            python_exe = sys.executable
+            
+        mapping = {"opencv": "opencv-python", "cv2": "opencv-python", "OpenCV": "opencv-python", "Pillow": "Pillow", "pil": "Pillow"}
+
+        def do_install(cmd_args):
+            res = run_command(f'"{python_exe}" -m pip install {cmd_args}', cwd=project_dir, timeout=120)
+            if "error:" in res.lower() or "no matching distribution" in res.lower():
+                res = run_command(f'"{python_exe}" -m pip install {cmd_args}', cwd=project_dir, timeout=120)
+            return res
+
         if deps:
-            dep_str = " ".join(deps)
-            results.append(run_command(
-                f'"{sys.executable}" -m pip install {dep_str}',
-                cwd=project_dir, timeout=120
-            ))
-        elif os.path.exists(req_file):
-            results.append(run_command(
-                f'"{sys.executable}" -m pip install -r requirements.txt',
-                cwd=project_dir, timeout=120
-            ))
+            cleaned_deps = [mapping.get(d.lower(), d) for d in deps]
+            dep_str = " ".join(cleaned_deps)
+            results.append(do_install(dep_str))
+        elif os.path.exists(os.path.join(project_dir, "requirements.txt")):
+            results.append(do_install("-r requirements.txt"))
         else:
             return "No requirements.txt found and no deps specified."
 

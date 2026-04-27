@@ -15,19 +15,65 @@ OLLAMA_BASE = "http://localhost:11434"
 _session = requests.Session()
 
 ROLE_MODELS = {
-    "planner": ["gemma4:latest", "llama3:8b", "llama3", "mixtral:latest", "mixtral", "mistral:7b", "gemma:7b"],
-    "builder": ["deepseek-coder:6.7b", "deepseek-coder", "codellama:7b", "llama3:8b"],
-    "debugger": ["deepseek-coder:6.7b", "deepseek-coder", "codellama:7b", "llama3:8b"],
-    "judge": ["llama3:8b", "mixtral:latest", "mixtral", "llama3", "mistral:7b", "gemma:7b"],
-    "refiner": ["mixtral:latest", "llama3:8b", "mixtral", "mistral:7b", "gemma:7b"],
-    "chat": ["gemma4:latest", "gemma:7b", "gemma", "gemma2:2b", "llama3:8b", "mistral:7b"],
-    "vision": ["llava:7b", "llava:13b", "llava", "bakllava", "llava-llama3", "moondream"],
-    "think": ["llama3:8b", "mixtral:latest", "llama3", "mixtral", "mistral:7b", "gemma:7b"],
+    # builder → mixtral:latest
+    "builder": [
+        "mixtral:latest", "mixtral",
+        "qwen2.5-coder:7b", "qwen2.5-coder", "qwen2.5-coder:latest",
+        "deepseek-coder:6.7b", "deepseek-coder",
+        "llama3:8b", "llama3", "codellama:7b",
+    ],
+    # debugger → deepseek-coder:6.7b
+    "debugger": [
+        "deepseek-coder:6.7b", "deepseek-coder",
+        "llama3:8b", "llama3",
+        "gemma:7b", "gemma",
+        "codellama:7b",
+    ],
+    # refiner → mixtral:latest
+    "refiner": [
+        "mixtral:latest", "mixtral",
+        "qwen2.5-coder:7b", "qwen2.5-coder", "qwen2.5-coder:latest",
+        "llama3:8b", "llama3",
+        "mistral:7b", "gemma:7b",
+    ],
+    # planner → gemma4:latest
+    "planner": [
+        "gemma4:latest", "gemma4",
+        "llama3:8b", "llama3",
+        "gemma:7b", "gemma",
+        "mixtral:latest", "mixtral", "mistral:7b",
+    ],
+    # judge → llama3:8b
+    "judge": [
+        "llama3:8b", "llama3",
+        "gemma4:latest", "gemma4",
+        "gemma:7b", "gemma",
+        "mixtral:latest", "mixtral", "mistral:7b",
+    ],
+    # chat → gemma4:latest
+    "chat": [
+        "gemma4:latest", "gemma4",
+        "gemma:7b", "gemma", "gemma2:2b",
+        "llama3:8b", "mistral:7b",
+    ],
+    # vision: llava:7b first
+    "vision": [
+        "llava:7b", "llava:13b", "llava",
+        "bakllava", "llava-llama3", "moondream",
+    ],
+    "think": [
+        "llama3:8b", "mixtral:latest", "llama3",
+        "mixtral", "mistral:7b", "gemma:7b",
+    ],
 }
 
 FALLBACK_CHAIN = ["gemma:7b", "gemma", "llama3:8b", "llama3", "mistral:7b", "mistral"]
 FAST_ROLES = {"chat"}
-HEAVY_MODELS = {"mixtral:latest", "mixtral", "deepseek-coder:6.7b", "deepseek-coder", "codellama:7b"}
+HEAVY_MODELS = {
+    "mixtral:latest", "mixtral",
+    "deepseek-coder:6.7b", "deepseek-coder",
+    "codellama:7b",
+}
 
 _request_log = []
 _model_cache = {"models": [], "timestamp": 0}

@@ -1,14 +1,33 @@
 """
-agents/refiner.py — Code optimization and polish agent.
+agents/refiner.py — Code optimization and patch agent.
 
-Takes working code and improves quality, performance, and readability.
+Applies ONLY targeted patches for specific mismatches reported by the judge.
+Does NOT regenerate entire files — uses edit_file_diff for surgical fixes.
 """
 
+import json
 import os
+import re
 from model_router import call_model
 from tool_registry import get_tools_description, parse_tool_calls, execute_tool
 
-REFINER_SYSTEM = """You are a code optimization expert. You improve working code.
+REFINER_SYSTEM = """You are a surgical code patcher. You fix ONLY the specific mismatches listed.
+
+{tools}
+
+Your job is to:
+1. Read only the files that contain the reported mismatches
+2. Apply targeted patches using edit_file_diff — do NOT rewrite entire files
+3. Fix ONLY the listed issues, touch nothing else
+
+RULES:
+- Do NOT regenerate entire files
+- Use edit_file_diff for every change
+- After ALL patches are applied, output: {{"action": "done", "args": {{"result": "description of patches applied"}}}}
+- If a mismatch cannot be fixed with a diff patch, skip it and note it in the done result
+"""
+
+GENERIC_REFINER_SYSTEM = """You are a code optimization expert. You improve working code.
 
 {tools}
 
@@ -57,30 +76,68 @@ def _normalize_workspace_path(path: str, workspace_dir: str) -> str:
 
 
 def run_refiner(workspace_dir: str, files: list[str],
-                suggestions: list[str] = None) -> dict:
+                suggestions: list[str] = None,
+                mismatches: list[str] = None) -> dict:
     """
-    Refine and optimize code files.
+    Refine and patch code files.
+
+    When mismatches are provided (from judge contract validation), the refiner
+    enters PATCH mode and applies only surgical fixes for those mismatches.
+    Otherwise falls back to general quality improvement mode.
 
     Args:
         workspace_dir: Project directory.
         files: List of files to potentially refine.
         suggestions: Specific improvements suggested by the judge.
+        mismatches: Exact contract violation strings from judge validation.
 
     Returns:
         Summary of refinements applied.
     """
+    # Load contract for reference
+    contract_text = ""
+    contract_path = os.path.join(workspace_dir, "contract.json")
+    if os.path.exists(contract_path):
+        try:
+            with open(contract_path, "r", encoding="utf-8") as f:
+                contract_text = f.read()
+        except Exception:
+            pass
+
     tools_desc = get_tools_description()
-    system = REFINER_SYSTEM.format(tools=tools_desc)
 
-    suggestions_text = ""
-    if suggestions:
-        suggestions_text = "Suggested improvements:\n" + "\n".join(
-            f"  - {s}" for s in suggestions
-        )
+    if mismatches:
+        # PATCH MODE — only fix what the judge flagged
+        system = REFINER_SYSTEM.format(tools=tools_desc)
+        mismatch_block = "\n".join(f"  [{i+1}] {m}" for i, m in enumerate(mismatches))
+        prompt = f"""Apply ONLY the following patches to fix contract mismatches.
+Do NOT touch any code that is not directly related to these issues.
 
-    file_list = "\n".join(f"  - {f}" for f in files)
+Workspace: {workspace_dir}
 
-    prompt = f"""Refine the following project files:
+Files available:
+{chr(10).join(f"  - {f}" for f in files)}
+
+INTERFACE CONTRACT:
+{contract_text}
+
+MISMATCHES TO FIX (patch ONLY these):
+{mismatch_block}
+
+Read the relevant file(s), then apply the minimum diff needed to fix each mismatch."""
+        print(f"\n{'=' * 60}")
+        print(f"🩹 REFINER — Patching {len(mismatches)} contract mismatch(es)...")
+        print(f"{'=' * 60}")
+    else:
+        # GENERIC IMPROVEMENT MODE
+        system = GENERIC_REFINER_SYSTEM.format(tools=tools_desc)
+        suggestions_text = ""
+        if suggestions:
+            suggestions_text = "Suggested improvements:\n" + "\n".join(
+                f"  - {s}" for s in suggestions
+            )
+        file_list = "\n".join(f"  - {f}" for f in files)
+        prompt = f"""Refine the following project files:
 
 Project directory: {workspace_dir}
 
@@ -90,10 +147,9 @@ Files:
 {suggestions_text}
 
 Start by reading the main files to understand the code, then apply improvements."""
-
-    print(f"\n{'=' * 60}")
-    print(f"✨ REFINER — Optimizing code...")
-    print(f"{'=' * 60}")
+        print(f"\n{'=' * 60}")
+        print(f"✨ REFINER — Optimizing code...")
+        print(f"{'=' * 60}")
 
     refinements = []
     conversation = [prompt]
@@ -120,7 +176,8 @@ Start by reading the main files to understand the code, then apply improvements.
         for call in calls:
             if call["action"] == "done":
                 result_text = call.get("args", {}).get("result", "Refinement complete")
-                print(f"   ✨ {result_text}")
+                icon = "🩹" if mismatches else "✨"
+                print(f"   {icon} {result_text}")
                 return {"refinements": refinements, "summary": result_text}
 
             # Fix relative paths
@@ -132,8 +189,9 @@ Start by reading the main files to understand the code, then apply improvements.
             if result.get("success"):
                 if call["action"] in ("edit_file_diff", "write_file"):
                     refinements.append(call)
-                    print(f"   ✏️  Refined: {call.get('args', {}).get('path', 'unknown')}")
-                conversation.append(f"Tool result: {result['result']}\n\nContinue refining.")
+                    icon = "🩹" if mismatches else "✏️"
+                    print(f"   {icon}  Patched: {call.get('args', {}).get('path', 'unknown')}")
+                conversation.append(f"Tool result: {result['result']}\n\nContinue.")
             else:
                 conversation.append(f"Tool error: {result.get('error')}. Skip and continue.")
 

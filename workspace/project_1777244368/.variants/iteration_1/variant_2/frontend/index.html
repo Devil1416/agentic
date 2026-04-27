@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-<｜begin▁of▁sentence｜>C">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FullStack Todo App</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div id="app">
+        <h1>ToDo List</h1>
+        <form id="todo-form" action="/api/todos" method="post">
+            <input type="text" name="description" placeholder="Add a new task..." required>
+            <button type="submit">Add Task</button>
+        </form>
+        <ul id="todo-list"></ul>
+    </div>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
