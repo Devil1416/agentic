@@ -1,3 +1,18 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "1cf9ee47813e",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 """
 utils/command_parser.py — Parse user input into commands or natural language.
 
@@ -32,6 +47,8 @@ def parse_input(raw: str) -> dict:
             "raw": str
         }
     """
+
+
     raw = raw.strip()
     if not raw:
         return {"type": "empty", "command": None, "args": [], "raw": ""}
@@ -69,3 +86,11 @@ def get_help_text() -> str:
     lines.append("  Or just type naturally — I'll figure out what you mean.")
     lines.append("")
     return "\n".join(lines)
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

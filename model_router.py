@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 model_router.py - Ollama model routing with speed and reliability safeguards.
 
@@ -10,6 +15,16 @@ import time
 from typing import Generator, Optional
 
 import requests
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "8c9fca50dc7e",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 OLLAMA_BASE = "http://localhost:11434"
 _session = requests.Session()
@@ -85,6 +100,8 @@ MODEL_FAILURE_BACKOFF_S = 120
 
 def get_installed_models() -> list[str]:
     """Query Ollama for locally available models. Cached for performance."""
+
+
     now = time.time()
     if _model_cache["models"] and (now - _model_cache["timestamp"]) < MODEL_CACHE_TTL:
         return _model_cache["models"]
@@ -210,6 +227,7 @@ def call_model(role: str, prompt: str, stream: bool = False,
             _clear_model_failure(candidate)
             duration_ms = int((time.time() - start) * 1000)
             _log_request(role, candidate, len(prompt), duration_ms)
+            print(f"[model_router] {candidate} generated response successfully.")
             return result
         except Exception as e:
             _mark_model_failure(candidate)
@@ -232,11 +250,8 @@ def _blocking_response(payload: dict) -> str:
         return resp.json().get("response", "")
     except requests.exceptions.HTTPError as e:
         if e.response is not None and e.response.status_code == 500:
-            print(f"[model_router] 500 error from {payload.get('model')}, retrying once...")
-            time.sleep(2)
-            resp = _session.post(f"{OLLAMA_BASE}/api/generate", json=payload, timeout=300)
-            resp.raise_for_status()
-            return resp.json().get("response", "")
+            print(f"[model_router] 500 error from {payload.get('model')}, immediately falling back.")
+            raise RuntimeError(f"Model {payload.get('model')} returned 500 error")
         raise
 
 
@@ -317,3 +332,11 @@ def call_model_streaming_print(role: str, prompt: str,
         full.append(token)
     print()
     return "".join(full)
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

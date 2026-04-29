@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 main.py — Entry point for niggativity.
 
@@ -11,6 +16,16 @@ Usage:
 import sys
 import os
 import io
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "9e68163d3150",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 # Fix Windows terminal encoding
 if sys.platform == "win32":
@@ -36,6 +51,8 @@ def print_banner():
  |                                                         |
  +---------------------------------------------------------+
 """
+
+
     print(banner)
 
 
@@ -120,3 +137,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

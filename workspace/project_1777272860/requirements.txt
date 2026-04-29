@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+python-multipart
+torch
+diffusers
+transformers
+accelerate
+controlnet_aux
+rembg
+opencv-python-headless
+numpy
+Pillow

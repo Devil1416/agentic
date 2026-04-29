@@ -1,3 +1,4 @@
+<!-- Author: Harsh Ashar | github.com/Devil1416 | Niggativity -->
 # NIGGATIVITY SYSTEM KNOWLEDGE
 
 ## System Overview
@@ -20,6 +21,7 @@ Niggativity is a local-first autonomous coding assistant powered by Ollama. It f
 - **backend/__init__.py**: No description available.
 - **backend/server.py**: backend/server.py — FastAPI server bridging UI/VSCode to the niggativity orchestrator.
 - **cli.py**: cli.py — Interactive conversational CLI for niggativity.
+<!-- Provenance: Harsh Ashar | github.com/Devil1416 | Niggativity | integrity:d3972cbea442 -->
 - **main.py**: main.py — Entry point for niggativity.
 - **memory/__init__.py**: No description available.
 - **memory/vector_store.py**: memory/vector_store.py - Persistent memory via FAISS + sentence-transformers.
@@ -42,3 +44,7 @@ Niggativity is a local-first autonomous coding assistant powered by Ollama. It f
 ## Known Limitations
 
 ## Improvement History
+
+---
+> Original work by **Harsh Ashar** — [github.com/Devil1416](https://github.com/Devil1416)  
+> Part of the **Niggativity** project. Attribution removal is detectable.

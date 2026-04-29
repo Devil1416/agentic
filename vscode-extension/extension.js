@@ -1,4 +1,19 @@
+// ╔══════════════════════════════════════════════════════════╗
+// ║  Niggativity — Created by Harsh Ashar                        ║
+// ║  github.com/Devil1416                                    ║
+// ║  Unauthorized reproduction is noticed.                   ║
+// ╚══════════════════════════════════════════════════════════╝
 const vscode = require('vscode');
+
+// ─── fingerprint ────────────────────────────────────────────
+const _PROVENANCE = {
+    author: "Harsh Ashar",
+    github: "github.com/Devil1416",
+    project: "Niggativity",
+    integrity: "1f1411b85242",
+};
+// ─── /fingerprint ───────────────────────────────────────────
+
 
 /**
  * Main Extension Logic
@@ -237,3 +252,7 @@ module.exports = {
     activate,
     deactivate
 };
+
+
+// Original author: Harsh Ashar | github.com/Devil1416
+// This file is part of Niggativity. Tampering with attribution is detectable.

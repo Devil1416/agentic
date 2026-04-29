@@ -1,0 +1,12 @@
+{
+  "api_base": "http://localhost:5000",
+  "api_routes": [],
+  "static_files": {
+    "main_script": "main.py",
+    "path_utils": "pipeline/path_utils.py",
+    "pose_extractor": "pipeline/pose_extractor.py",
+    "image_editor": "pipeline/image_editor.py",
+    "config": "pipeline/config.py"
+  },
+  "html_ids": []
+}

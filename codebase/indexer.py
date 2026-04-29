@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 codebase/indexer.py — Workspace codebase indexing system.
 
@@ -11,6 +16,16 @@ import json
 import hashlib
 from typing import Dict, List
 from model_router import call_model
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "cacf21dae1c6",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 INDEX_FILE_NAME = ".niggativity_index.json"
 
@@ -40,6 +55,8 @@ If a field is not applicable (e.g., no classes), output an empty array `[]`.
 """
 
 class Indexer:
+
+
     def __init__(self, workspace_dir: str):
         self.workspace_dir = workspace_dir
         self.index_file = os.path.join(workspace_dir, INDEX_FILE_NAME)
@@ -190,3 +207,11 @@ class Indexer:
             "functions": [],
             "imports": []
         }
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

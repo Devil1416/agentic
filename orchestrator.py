@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 orchestrator.py - Main execution loop for niggativity.
 
@@ -11,6 +16,16 @@ import shutil
 import sys
 import time
 from datetime import datetime
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "f245b54eb826",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 if sys.platform == "win32":
     try:
@@ -47,6 +62,8 @@ IGNORED_DIRS = {"node_modules", "__pycache__", ".git", "venv", ".venv", VARIANTS
 
 def init_tools():
     """Register all tools in the global registry."""
+
+
     register_tool("read_file", read_file, "Read file contents. Args: path (str)")
     register_tool("write_file", write_file, "Write content to file. Args: path (str), content (str)")
     register_tool("edit_file_diff", edit_file_diff, "Apply unified diff patch to file. Args: path (str), diff (str)")
@@ -270,14 +287,12 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
         iter_log["variants"] = variants
 
         for variant_id, variant_workspace in enumerate(variant_workspaces, start=1):
+            from tools.executor import _detect_entrypoint
+            detected = _detect_entrypoint(variant_workspace)
+            if detected:
+                entrypoint = detected
+                plan["entrypoint"] = detected
             full_entry_path = os.path.join(variant_workspace, entrypoint)
-            if not os.path.isfile(full_entry_path):
-                from tools.executor import _detect_entrypoint
-                detected = _detect_entrypoint(variant_workspace)
-                if detected:
-                    entrypoint = detected
-                    plan["entrypoint"] = detected
-                    full_entry_path = os.path.join(variant_workspace, entrypoint)
                     
             # VALIDATION BEFORE EXECUTION
             files_missing = False
@@ -599,6 +614,23 @@ def _install_python_deps(deps: list[str], workspace_dir: str):
     if not deps:
         return
 
+    pip_deps = []
+    for d in deps:
+        if "/" in d or d.startswith(("stabilityai/", "runwayml/", "lllyasviel/")):
+            print(f"\n[DEPENDENCY] routing {d} to snapshot_download")
+            run_command(f'python -c "from huggingface_hub import snapshot_download; snapshot_download(\'{d}\')" ', cwd=workspace_dir, timeout=300)
+        elif ":" in d or d.lower() in ["llama3", "mixtral", "gemma", "mistral", "qwen2.5-coder", "deepseek-coder", "codellama"]:
+            print(f"\n[DEPENDENCY] routing {d} to ollama pull")
+            from tool_registry import get_tool
+            pull = get_tool("pull_ollama_model")
+            if pull: pull(model_name=d)
+        else:
+            pip_deps.append(d)
+
+    deps = pip_deps
+    if not deps:
+        return
+
     if sys.version_info >= (3, 13):
         print(f"\n[DEPENDENCY] Warning: Python >= 3.13 detected ({sys.version.split()[0]}). Some packages might fail.")
 
@@ -658,3 +690,11 @@ def _clean_dependencies(deps: list[str], language: str) -> list[str]:
         cleaned.append(mapped_name)
 
     return cleaned
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

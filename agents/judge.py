@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 agents/judge.py — Solution evaluation agent.
 
@@ -9,6 +14,16 @@ import json
 import os
 import re
 from model_router import call_model
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "b25522cfe935",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 JUDGE_SYSTEM = """You are a senior code reviewer and quality judge.
 
@@ -37,6 +52,8 @@ Verdicts:
 
 
 def run_judge(task: str, variants: list[dict], execution_results: list[str],
+
+
               workspace_dir: str = None) -> dict:
     """
     Judge the quality of build variants.
@@ -204,13 +221,16 @@ def _validate_contract(workspace_dir: str, variants: list[dict], verdict: dict) 
             )
 
     # 5. Validate static_files exist on disk and are referenced correctly
-    for logical_name, rel_path in static_files.items():
+    paths = static_files.values() if isinstance(static_files, dict) else static_files
+    for rel_path in paths:
+        if not rel_path or not isinstance(rel_path, str):
+            continue
         abs_path = os.path.join(workspace_dir, rel_path)
         if not os.path.exists(abs_path):
-            mismatches.append(f"static_file '{logical_name}' expected at '{rel_path}' but file does not exist")
+            mismatches.append(f"static_file expected at '{rel_path}' but file does not exist")
         # Check HTML references the exact rel_path
         if html_content and rel_path not in html_content:
-            mismatches.append(f"HTML does not reference static_file path '{rel_path}' (logical: {logical_name})")
+            mismatches.append(f"HTML does not reference static_file path '{rel_path}'")
 
     return mismatches
 
@@ -286,3 +306,11 @@ def _extract_verdict(text: str) -> dict | None:
                 "best_variant": 1, "issues": [], "suggestions": []}
 
     return None
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

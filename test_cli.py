@@ -1,5 +1,20 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """Validate all CLI subsystems."""
 import sys, os
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "3b0c4076b531",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 sys.path.insert(0, os.path.dirname(__file__))
 
 print("=" * 50)
@@ -24,6 +39,8 @@ print("[PASS] command_parser")
 # 2. Help text
 help_text = get_help_text()
 assert "/exit" in help_text
+
+
 assert "/run" in help_text
 print("[PASS] help text")
 
@@ -75,3 +92,11 @@ print("ALL CLI CHECKS PASSED [OK]")
 print("=" * 50)
 print()
 print("To run: python cli.py")
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

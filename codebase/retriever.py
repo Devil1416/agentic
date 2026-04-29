@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 codebase/retriever.py — Codebase retrieval system.
 
@@ -11,10 +16,22 @@ import os
 import numpy as np
 from codebase.indexer import Indexer
 
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "3c2237a3ae94",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
+
 # Lazy loaded
 _embedder = None
 
 def _get_embedder():
+
+
     global _embedder
     if _embedder is None:
         try:
@@ -101,3 +118,11 @@ def get_context_for_prompt(query: str, workspace_dir: str, top_k: int = 5) -> st
         context_lines.append("")
         
     return "\n".join(context_lines)
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

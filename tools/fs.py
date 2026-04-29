@@ -1,12 +1,28 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 tools/fs.py — Filesystem tools: read, write, list, edit via diff.
 """
 
 import os
 
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "623ad2bab5ac",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 def read_file(path: str) -> str:
     """Read and return the contents of a file."""
+
+
     path = os.path.abspath(path)
     if not os.path.exists(path):
         raise FileNotFoundError(f"File not found: {path}")
@@ -41,3 +57,11 @@ def list_files(path: str = ".") -> str:
     if not result:
         return "Directory is empty."
     return "\n".join(sorted(result))
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

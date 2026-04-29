@@ -1,3 +1,4 @@
+<!-- Author: Harsh Ashar | github.com/Devil1416 | Niggativity -->
 <div align="center">
 
 # ⚡ Niggativity 
@@ -89,6 +90,7 @@ graph TD
         planner["Planner (Architect)"]
         builder["Builder (Coder)"]
         debugger["Debugger (Fixer)"]
+<!-- Provenance: Harsh Ashar | github.com/Devil1416 | Niggativity | integrity:f31aaa5dba8a -->
         judge["Judge (Evaluator)"]
         refiner["Refiner (Optimizer)"]
         conv["Conversation Agent"]
@@ -179,3 +181,7 @@ To balance speed and intelligence on consumer hardware, Niggativity routes tasks
 <div align="center">
   <i>Built with ❤️ for autonomous AI developers.</i>
 </div>
+
+---
+> Original work by **Harsh Ashar** — [github.com/Devil1416](https://github.com/Devil1416)  
+> Part of the **Niggativity** project. Attribution removal is detectable.

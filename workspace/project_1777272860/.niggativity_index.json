@@ -1,0 +1,70 @@
+{
+  "contract.json": {
+    "summary": "This file serves as a configuration contract defining the API base URL, API routes, and paths for static assets.",
+    "classes": [],
+    "functions": [],
+    "imports": [],
+    "hash": "34c38e369a09bdcb4e9cd749ef8bf0dc"
+  },
+  ".task_lock.json": {
+    "summary": "This is a simple JSON metadata file that specifies the programming language associated with a task or project.",
+    "classes": [],
+    "functions": [],
+    "imports": [],
+    "hash": "b1e17a5c80f660decf44795d42ea076a"
+  },
+  "main.py": {
+    "summary": "Parsing error.",
+    "classes": [],
+    "functions": [],
+    "imports": [],
+    "hash": "64938052b794e138983bef024419412c"
+  },
+  "pipeline/config.py": {
+    "summary": "Manages application configuration settings, including model paths, input/output directories, and hyperparameters, providing methods to load, save, and retrieve specific values.",
+    "classes": [
+      "ConfigManager"
+    ],
+    "functions": [
+      "load",
+      "save",
+      "get_model_paths",
+      "set_model_path",
+      "get_input_dir",
+      "set_input_dir",
+      "get_output_dir",
+      "set_output_dir"
+    ],
+    "imports": [
+      "os",
+      "typing"
+    ],
+    "hash": "37043f4d92af3b7a4129852842878ce6"
+  },
+  "pipeline/image_editor.py": {
+    "summary": "Parsing error.",
+    "classes": [],
+    "functions": [],
+    "imports": [],
+    "hash": "0b336c14a31b34b036056b29d1d51a97"
+  },
+  "pipeline/path_utils.py": {
+    "summary": "Provides a utility function to safely join path components using os.path.join, specifically handling None inputs to prevent TypeErrors.",
+    "classes": [],
+    "functions": [
+      "safe_join"
+    ],
+    "imports": [
+      "os",
+      "typing.Union"
+    ],
+    "hash": "957ff552948b19c188135b7f7b49954b"
+  },
+  "pipeline/pose_extractor.py": {
+    "summary": "Parsing error.",
+    "classes": [],
+    "functions": [],
+    "imports": [],
+    "hash": "09aa098df78ed605352ef5dd973caf61"
+  }
+}

@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 memory/vector_store.py - Persistent memory via FAISS + sentence-transformers.
 
@@ -13,6 +18,16 @@ from typing import Optional
 
 import numpy as np
 
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "673d6cf7e825",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
+
 MEMORY_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "memory")
 MEMORY_JSON = os.path.join(MEMORY_DIR, "entries.json")
 
@@ -26,6 +41,8 @@ _warm_thread = None
 
 def _load_entries():
     """Load persisted memory entries without loading embedding models."""
+
+
     global _entries
     os.makedirs(MEMORY_DIR, exist_ok=True)
     if os.path.exists(MEMORY_JSON):
@@ -223,3 +240,11 @@ def get_relevant_context(query: str, top_k: int = 3) -> str:
         text = result["text"][:300]
         lines.append(f"- [{category}] {text}")
     return "\n".join(lines)
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

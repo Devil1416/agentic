@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 agents/conversation_agent.py — Conversational intent classifier and responder.
 
@@ -12,6 +17,16 @@ import json
 import re
 from model_router import call_model, call_model_streaming_print
 from memory.vector_store import get_relevant_context
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "5a4469994f13",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 CONVERSATION_SYSTEM = """You are niggativity, a local autonomous coding assistant. You are conversational, helpful, and direct.
 
@@ -94,6 +109,8 @@ Be natural and conversational. You're a developer colleague, not a robot."""
 
 
 def classify_intent(user_input: str, conversation_context: str = "",
+
+
                     current_goal: str = None, current_mode: str = "discuss",
                     self_improvement_mode: bool = False,
                     **kwargs) -> dict:
@@ -368,3 +385,11 @@ def _parse_response(text: str) -> dict | None:
             continue
 
     return None
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

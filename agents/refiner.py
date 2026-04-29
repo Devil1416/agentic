@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 agents/refiner.py — Code optimization and patch agent.
 
@@ -10,6 +15,16 @@ import os
 import re
 from model_router import call_model
 from tool_registry import get_tools_description, parse_tool_calls, execute_tool
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "42380febb7d0",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 REFINER_SYSTEM = """You are a surgical code patcher. You fix ONLY the specific mismatches listed.
 
@@ -48,6 +63,8 @@ MAX_REFINE_ROUNDS = 8
 
 def _normalize_workspace_path(path: str, workspace_dir: str) -> str:
     """Keep refiner edits constrained to the active workspace root."""
+
+
     workspace_dir = os.path.abspath(workspace_dir)
     normalized = path.replace("\\", "/")
     parts = [part for part in normalized.split("/") if part and part != "."]
@@ -196,3 +213,11 @@ Start by reading the main files to understand the code, then apply improvements.
                 conversation.append(f"Tool error: {result.get('error')}. Skip and continue.")
 
     return {"refinements": refinements, "summary": "Refinement rounds complete"}
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

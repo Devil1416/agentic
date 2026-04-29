@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 tools/git_tools.py — Git operations for project management.
 
@@ -7,9 +12,20 @@ Provides init, commit, and rollback capabilities.
 import os
 from tools.executor import run_command
 
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "486e5b74f194",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 def git_init(project_dir: str) -> str:
     """Initialize a git repository in the project directory."""
+
+
     project_dir = os.path.abspath(project_dir)
     if os.path.exists(os.path.join(project_dir, ".git")):
         return f"Git already initialized in {project_dir}"
@@ -74,3 +90,11 @@ def git_diff(project_dir: str) -> str:
     """Show current unstaged changes."""
     project_dir = os.path.abspath(project_dir)
     return run_command("git diff", cwd=project_dir, timeout=10)
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

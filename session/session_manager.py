@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 session/session_manager.py — Persistent session state with multi-session support.
 
@@ -11,11 +16,22 @@ import os
 import time
 from datetime import datetime
 
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "02cbc014f0a7",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
+
 SESSION_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "logs", "sessions")
 
 
 class SessionManager:
     """Manages a persistent conversational session with multi-session support."""
+
 
     def __init__(self, session_id: str = None):
         os.makedirs(SESSION_DIR, exist_ok=True)
@@ -293,3 +309,11 @@ class SessionManager:
         if sessions:
             return sessions[0]["session_id"]
         return None
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

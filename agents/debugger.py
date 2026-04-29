@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 agents/debugger.py — Error analysis and auto-fix agent.
 
@@ -9,6 +14,16 @@ import os
 from model_router import call_model
 from tool_registry import get_tools_description, parse_tool_calls, execute_tool
 from memory.vector_store import get_relevant_context, add_memory
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "addcf2a82b51",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 DEBUGGER_SYSTEM = """You are an expert debugger. You analyze errors and fix code.
 
@@ -41,6 +56,8 @@ MAX_DEBUG_ROUNDS = 10
 
 def _normalize_workspace_path(path: str, workspace_dir: str) -> str:
     """Keep debugger edits constrained to the active workspace root."""
+
+
     workspace_dir = os.path.abspath(workspace_dir)
     normalized = path.replace("\\", "/")
     parts = [part for part in normalized.split("/") if part and part != "."]
@@ -179,3 +196,11 @@ Start by reading the file mentioned in the error trace."""
     add_memory(f"Unresolved error: {error_output[:300]}", category="error")
 
     return {"fixed": False, "fixes": fixes, "summary": "Max debug rounds reached"}
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 backend/server.py — FastAPI server bridging UI/VSCode to the niggativity orchestrator.
 
@@ -21,6 +26,16 @@ Endpoints:
 """
 import sys, os, io, json, threading, re
 from typing import Optional
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "a117573ac8f0",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 if sys.platform == "win32":
     try:
@@ -55,6 +70,8 @@ WORKSPACE_BASE = os.path.join(ROOT, "workspace")
 
 
 def get_session() -> SessionManager:
+
+
     global _session
     if _session is None:
         latest = SessionManager.get_latest_session_id()
@@ -530,3 +547,11 @@ if __name__ == "__main__":
     print("  UI:      http://localhost:8000/ui")
     print("="*60 + "\n")
     uvicorn.run("backend.server:app", host="0.0.0.0", port=8000, reload=False, log_level="info")
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

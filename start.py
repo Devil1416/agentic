@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 start.py - Launcher for the niggativity multi-interface system.
 
@@ -15,12 +20,24 @@ import urllib.error
 import urllib.request
 import webbrowser
 
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "294c4df45443",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 BACKEND_URL = "http://127.0.0.1:8000/"
 UI_URL = "http://127.0.0.1:8000/ui"
 
 
 def backend_is_healthy(timeout: float = 1.0) -> bool:
+
+
     try:
         req = urllib.request.Request(BACKEND_URL)
         with urllib.request.urlopen(req, timeout=timeout) as response:
@@ -93,3 +110,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

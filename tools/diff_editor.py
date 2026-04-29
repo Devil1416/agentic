@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 tools/diff_editor.py — Unified-diff-based file editing.
 
@@ -6,6 +11,15 @@ Applies patches to files without full overwrite.
 
 import os
 import re
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "df1915d6298f",
+}
+# ─── /fingerprint ───────────────────────────────────────────
 
 
 def edit_file_diff(path: str, diff: str) -> str:
@@ -22,6 +36,8 @@ def edit_file_diff(path: str, diff: str) -> str:
 
     Returns summary of changes applied.
     """
+
+
     path = os.path.abspath(path)
 
     if not os.path.exists(path):
@@ -140,3 +156,11 @@ def _parse_simple_diff(diff: str) -> list[dict]:
     if old_lines or new_lines:
         return [{"old_start": 1, "old_lines": old_lines, "new_lines": new_lines}]
     return []
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 cli.py — Interactive conversational CLI for niggativity.
 
@@ -12,6 +17,16 @@ import sys
 import os
 import io
 import time
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "04b45e93a8f3",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 # Fix Windows terminal encoding
 if sys.platform == "win32":
@@ -49,6 +64,8 @@ _RED   = "\033[31m"
 
 
 def _bar(pct: float, width: int = 24) -> str:
+
+
     filled = int(width * pct)
     bar = "\u2588" * filled + "\u2591" * (width - filled)
     return f"[{bar}] {int(pct * 100):3d}%"
@@ -227,7 +244,6 @@ class LiveProgress:
             self._active = False
 
 # ──────────────────────────────────────────────────────────────────────────────
-
 
 
 def should_inject_self_context(user_input: str, intent: str, self_improvement_mode: bool) -> bool:
@@ -478,6 +494,15 @@ class CLI:
                 print("  [SELF] context skipped")
 
         lower_input = user_input.lower()
+        if lower_input in ["run", "start", "test run", "execute it", "launch it"] and self.last_workspace:
+            print(f"\n  [EXECUTOR] Directly running existing workspace: {self.last_workspace}")
+            from tools.executor import run_python, _detect_entrypoint
+            detected_entrypoint = _detect_entrypoint(self.last_workspace) or "main.py"
+            result_out = run_python(self.last_workspace, detected_entrypoint, timeout=30)
+            print(f"\n{result_out}\n")
+            self.session.add_message("assistant", f"Ran existing project. Output:\n{result_out}")
+            return
+
         if any(keyword in lower_input for keyword in ["build", "create", "implement", "fix", "run"]):
             mode = "EXECUTE"
             if "goal" not in result:
@@ -630,6 +655,8 @@ class CLI:
 
     def _handle_plan_mode(self, goal: str, response: str):
         """Handle plan-only mode."""
+        self.improve_workspace = ROOT if getattr(self, 'self_improvement_mode', False) else None
+        override_workspace = getattr(self, 'improve_workspace', None)
         self.session.set_goal(goal)
         self.session.set_mode("plan")
 
@@ -964,3 +991,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

@@ -1,5 +1,20 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """Validate all v3 upgrade changes."""
 import sys, os
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "a5c913e6d761",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 sys.path.insert(0, os.path.dirname(__file__))
 
 print("=" * 50)
@@ -33,6 +48,8 @@ q3 = _quick_classify("build me a REST API")
 assert q3 and q3["mode"] == "EXECUTE", f"Expected EXECUTE, got: {q3}"
 q4 = _quick_classify("not working")
 assert q4 and q4["mode"] == "DEBUG", f"Expected DEBUG, got: {q4}"
+
+
 q5 = _quick_classify("build this UI from this screenshot")
 assert q5 and q5.get("needs_image"), f"Expected needs_image, got: {q5}"
 print("[PASS] conversation_agent CHAT mode + image detection")
@@ -104,3 +121,11 @@ print("ALL V3 CHECKS PASSED [OK]")
 print("=" * 50)
 print()
 print("To run: python cli.py")
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

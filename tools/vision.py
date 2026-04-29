@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 tools/vision.py — Image analysis via Ollama multimodal models (llava).
 
@@ -8,6 +13,16 @@ import os
 import base64
 import json
 import requests
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "88d602a7b21f",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 OLLAMA_BASE = "http://localhost:11434"
 
@@ -23,6 +38,8 @@ def analyze_image(path: str, prompt: str = "") -> str:
     Returns:
         Structured description of the image contents.
     """
+
+
     path = os.path.abspath(path)
     if not os.path.exists(path):
         raise FileNotFoundError(f"Image not found: {path}")
@@ -112,3 +129,11 @@ def _find_vision_model() -> str | None:
                 return m
 
     return None
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

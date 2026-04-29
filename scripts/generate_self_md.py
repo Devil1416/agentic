@@ -1,8 +1,25 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 import os
 import ast
 import json
 
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "82b945d7de75",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
+
 def generate_self_md():
+
+
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     self_md_path = os.path.join(root_dir, "NIGGATIVITY_SELF.md")
     
@@ -59,3 +76,11 @@ Niggativity is a local-first autonomous coding assistant powered by Ollama. It f
 
 if __name__ == "__main__":
     generate_self_md()
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

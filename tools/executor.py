@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 tools/executor.py — Real code execution via subprocess.
 
@@ -7,6 +12,15 @@ Supports Python and Node.js with timeout, stdout/stderr capture.
 import os
 import subprocess
 import sys
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "618249ce8969",
+}
+# ─── /fingerprint ───────────────────────────────────────────
 
 
 def run_python(project_dir: str, entrypoint: str, timeout: int = 30) -> str:
@@ -21,6 +35,8 @@ def run_python(project_dir: str, entrypoint: str, timeout: int = 30) -> str:
     Returns:
         Combined output string with exit code, stdout, stderr.
     """
+
+
     project_dir = os.path.abspath(project_dir)
     script = os.path.join(project_dir, entrypoint)
 
@@ -288,3 +304,11 @@ def _detect_language(project_dir: str) -> str:
         if f.endswith((".js", ".ts", ".jsx", ".tsx")):
             return "node"
     return "python"
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

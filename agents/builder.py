@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 agents/builder.py — Code generation agent.
 
@@ -9,6 +14,16 @@ import json
 import os
 from model_router import call_model
 from tool_registry import get_tools_description, parse_tool_calls, execute_tool
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "2d37dd140d9a",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 BUILDER_SYSTEM = """You are an expert software engineer. Your job is to write complete, working code.
 
@@ -34,6 +49,8 @@ MAX_TOOL_ROUNDS = 20
 
 def _normalize_workspace_path(path: str, workspace_dir: str) -> str:
     """Keep tool writes constrained to the active workspace root."""
+
+
     workspace_dir = os.path.abspath(workspace_dir)
     normalized = path.replace("\\", "/")
     normalized = normalized.replace("<", "").replace(">", "")
@@ -211,3 +228,11 @@ Previously Generated Files in this iteration:
 
     print(f"   ✅ Builder #{variant_id} done ({len(files_written)} files)")
     return {"files_written": files_written, "errors": errors}
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

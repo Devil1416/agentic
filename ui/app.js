@@ -1,3 +1,8 @@
+// ╔══════════════════════════════════════════════════════════╗
+// ║  Niggativity — Created by Harsh Ashar                        ║
+// ║  github.com/Devil1416                                    ║
+// ║  Unauthorized reproduction is noticed.                   ║
+// ╚══════════════════════════════════════════════════════════╝
 ﻿/**
  * app.js â€” Client-side logic for niggativity Web UI v2.
  *
@@ -6,6 +11,16 @@
 
 // Auto-detect API base: if served from the backend, use same origin; otherwise fallback
 const API = window.location.protocol === 'file:'
+
+// ─── fingerprint ────────────────────────────────────────────
+const _PROVENANCE = {
+    author: "Harsh Ashar",
+    github: "github.com/Devil1416",
+    project: "Niggativity",
+    integrity: "e05cc90ace7e",
+};
+// ─── /fingerprint ───────────────────────────────────────────
+
     ? 'http://localhost:8000'
     : window.location.origin;
 
@@ -659,3 +674,7 @@ function reAddWelcome() {
         btn.addEventListener('click', () => { chatInput.value = btn.dataset.prompt; sendMessage(); });
     });
 }
+
+
+// Original author: Harsh Ashar | github.com/Devil1416
+// This file is part of Niggativity. Tampering with attribution is detectable.

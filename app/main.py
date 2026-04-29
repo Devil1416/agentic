@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 app/main.py - Niggativity desktop application.
 
@@ -12,6 +17,16 @@ import sys
 import time
 import urllib.error
 import urllib.request
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "4f1f81bd53e5",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -34,6 +49,8 @@ backend_log_path = os.path.join(ROOT, "app_log.txt")
 
 def backend_is_healthy(timeout: float = 1.0) -> bool:
     """Return True when the backend health endpoint responds."""
+
+
     try:
         request = urllib.request.Request(BACKEND_URL)
         with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -176,3 +193,11 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

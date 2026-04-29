@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 agents/planner.py — Planning agent.
 
@@ -12,6 +17,16 @@ import json
 from model_router import call_model
 from tool_registry import get_tools_description
 from memory.vector_store import get_relevant_context
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "2586d5572421",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 PLANNER_SYSTEM = """You are a senior software architect. Your role is to create detailed implementation plans.
 
@@ -86,6 +101,8 @@ def run_planner(task: str, workspace_dir: str) -> dict:
     Returns:
         Parsed plan dictionary.
     """
+
+
     # Fetch relevant memories and codebase context
     memory_context = get_relevant_context(task)
     
@@ -242,3 +259,11 @@ def _extract_plan(text: str) -> dict | None:
             continue
 
     return None
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

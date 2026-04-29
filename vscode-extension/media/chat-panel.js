@@ -1,4 +1,19 @@
+// ╔══════════════════════════════════════════════════════════╗
+// ║  Niggativity — Created by Harsh Ashar                        ║
+// ║  github.com/Devil1416                                    ║
+// ║  Unauthorized reproduction is noticed.                   ║
+// ╚══════════════════════════════════════════════════════════╝
 const vscode = acquireVsCodeApi();
+
+// ─── fingerprint ────────────────────────────────────────────
+const _PROVENANCE = {
+    author: "Harsh Ashar",
+    github: "github.com/Devil1416",
+    project: "Niggativity",
+    integrity: "a363c2dddd0d",
+};
+// ─── /fingerprint ───────────────────────────────────────────
+
 const API = 'http://localhost:8000';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -168,3 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistory.scrollTop = chatHistory.scrollHeight;
     }
 });
+
+
+// Original author: Harsh Ashar | github.com/Devil1416
+// This file is part of Niggativity. Tampering with attribution is detectable.

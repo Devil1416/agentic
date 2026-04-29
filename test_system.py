@@ -1,5 +1,20 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """Quick validation of all niggativity subsystems."""
 import sys, os
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "8ebf588388cb",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 sys.path.insert(0, os.path.dirname(__file__))
 
 print("=" * 50)
@@ -33,6 +48,7 @@ os.makedirs("workspace", exist_ok=True)
 r = execute_tool({"action": "write_file", "args": {"path": "workspace/_test.txt", "content": "hello"}})
 assert r["success"], f"Write failed: {r}"
 print("[PASS] write_file execution")
+
 
 r2 = execute_tool({"action": "read_file", "args": {"path": "workspace/_test.txt"}})
 assert r2["success"] and "hello" in r2["result"]
@@ -105,3 +121,11 @@ print("=" * 50)
 print()
 print("To run: python main.py --check")
 print('Or:     python main.py "Build a todo app"')
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

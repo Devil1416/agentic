@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 thinking_engine.py - Multi-agent thinking and synthesis engine.
 
@@ -10,6 +15,16 @@ import re
 from typing import Generator
 
 from model_router import call_model
+
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "4d5ed93c968d",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
 
 AGENTS = [
     {
@@ -36,6 +51,8 @@ AGENTS = [
 
 
 def _shorten(text: str, limit: int = 240) -> str:
+
+
     text = re.sub(r"\s+", " ", text).strip()
     return text if len(text) <= limit else text[: limit - 3] + "..."
 
@@ -245,3 +262,11 @@ def synthesize_thought(task: str, context: str) -> Generator[str, None, None]:
         temperature=0.25,
         stream=True,
     )
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.

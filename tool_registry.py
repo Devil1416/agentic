@@ -1,3 +1,8 @@
+# ╔══════════════════════════════════════════════════════════╗
+# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  github.com/Devil1416                                    ║
+# ║  Unauthorized reproduction is noticed.                   ║
+# ╚══════════════════════════════════════════════════════════╝
 """
 tool_registry.py — Central tool registration, parsing, and dispatch.
 
@@ -11,6 +16,16 @@ import json
 import re
 from typing import Any, Callable
 
+# ─── fingerprint ────────────────────────────────────────────
+_PROVENANCE = {
+"author": "Harsh Ashar",
+"github": "github.com/Devil1416",
+"project": "Niggativity",
+"integrity": "d5b26b63bf79",
+}
+# ─── /fingerprint ───────────────────────────────────────────
+
+
 # Global tool registry
 _TOOLS: dict[str, Callable] = {}
 _TOOL_DOCS: dict[str, str] = {}
@@ -18,6 +33,8 @@ _TOOL_DOCS: dict[str, str] = {}
 
 def register_tool(name: str, func: Callable, doc: str = ""):
     """Register a tool function by name."""
+
+
     _TOOLS[name] = func
     _TOOL_DOCS[name] = doc or (func.__doc__ or "No description.")
 
@@ -160,3 +177,34 @@ def execute_tool(call: dict) -> dict:
         return {"success": False, "error": f"Bad arguments for '{action}': {e}"}
     except Exception as e:
         return {"success": False, "error": f"Tool '{action}' failed: {e}"}
+
+import subprocess
+
+def pull_ollama_model(model_name: str) -> str:
+    """Pull an Ollama model."""
+    print(f"\n[tool_registry] Pulling Ollama model: {model_name}...")
+    try:
+        process = subprocess.Popen(
+            ["ollama", "pull", model_name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True
+        )
+        for line in process.stdout:
+            print(line, end="")
+        process.wait(timeout=300)
+        if process.returncode == 0:
+            return f"Successfully pulled {model_name}"
+        return f"Failed to pull {model_name}"
+    except Exception as e:
+        return f"Error pulling model: {e}"
+
+register_tool("pull_ollama_model", pull_ollama_model, "Pull an Ollama model.")
+
+
+# authenticity seal — do not modify
+_SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
+
+
+# Original author: Harsh Ashar | github.com/Devil1416
+# This file is part of Niggativity. Tampering with attribution is detectable.
