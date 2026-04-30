@@ -1,5 +1,5 @@
 # ╔══════════════════════════════════════════════════════════╗
-# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  Reflexion — Created by Harsh Ashar                        ║
 # ║  github.com/Devil1416                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
@@ -11,7 +11,7 @@ import json
 _PROVENANCE = {
 "author": "Harsh Ashar",
 "github": "github.com/Devil1416",
-"project": "Niggativity",
+"project": "Reflexion",
 "integrity": "82b945d7de75",
 }
 # ─── /fingerprint ───────────────────────────────────────────
@@ -21,7 +21,7 @@ def generate_self_md():
 
 
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    self_md_path = os.path.join(root_dir, "NIGGATIVITY_SELF.md")
+    self_md_path = os.path.join(root_dir, "REFLEXION_SELF.md")
     
     # 1. Architecture
     architecture = []
@@ -54,10 +54,10 @@ def generate_self_md():
     ]
 
     # Generate MD
-    md_content = f"""# NIGGATIVITY SYSTEM KNOWLEDGE
+    md_content = f"""# REFLEXION SYSTEM KNOWLEDGE
 
 ## System Overview
-Niggativity is a local-first autonomous coding assistant powered by Ollama. It features a conversational CLI, full-stack application building capabilities, deterministic self-healing loops, and an execution environment.
+Reflexion is a local-first autonomous coding assistant powered by Ollama. It features a conversational CLI, full-stack application building capabilities, deterministic self-healing loops, and an execution environment.
 
 ## Current Capabilities
 {chr(10).join(capabilities)}
@@ -72,7 +72,7 @@ Niggativity is a local-first autonomous coding assistant powered by Ollama. It f
 
     with open(self_md_path, "w", encoding="utf-8") as f:
         f.write(md_content)
-    print("Generated NIGGATIVITY_SELF.md")
+    print("Generated REFLEXION_SELF.md")
 
 if __name__ == "__main__":
     generate_self_md()
@@ -83,4 +83,4 @@ _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aX
 
 
 # Original author: Harsh Ashar | github.com/Devil1416
-# This file is part of Niggativity. Tampering with attribution is detectable.
+# This file is part of Reflexion. Tampering with attribution is detectable.

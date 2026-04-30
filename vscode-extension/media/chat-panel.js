@@ -1,5 +1,5 @@
 // ╔══════════════════════════════════════════════════════════╗
-// ║  Niggativity — Created by Harsh Ashar                        ║
+// ║  Reflexion — Created by Harsh Ashar                        ║
 // ║  github.com/Devil1416                                    ║
 // ║  Unauthorized reproduction is noticed.                   ║
 // ╚══════════════════════════════════════════════════════════╝
@@ -9,7 +9,7 @@ const vscode = acquireVsCodeApi();
 const _PROVENANCE = {
     author: "Harsh Ashar",
     github: "github.com/Devil1416",
-    project: "Niggativity",
+    project: "Reflexion",
     integrity: "a363c2dddd0d",
 };
 // ─── /fingerprint ───────────────────────────────────────────
@@ -154,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement('div');
         div.className = `message ${role}`;
         
-        const roleLabel = role === 'user' ? 'You' : 'Niggativity';
+        const roleLabel = role === 'user' ? 'You' : 'Reflexion';
         
         div.innerHTML = `
             <strong>${roleLabel}</strong>
@@ -186,4 +186,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // Original author: Harsh Ashar | github.com/Devil1416
-// This file is part of Niggativity. Tampering with attribution is detectable.
+// This file is part of Reflexion. Tampering with attribution is detectable.

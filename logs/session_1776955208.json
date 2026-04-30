@@ -1,6 +1,6 @@
 {
   "task": "build a tiny hello world python cli",
-  "workspace": "D:\\n1ggaman\\agentic\\workspace\\project_1776955024",
+  "workspace": "D:\\n1ggaman\\reflexion\\workspace\\project_1776955024",
   "started": "2026-04-23T20:07:56.517957",
   "iterations": [
     {
@@ -14,7 +14,7 @@
             "main.py"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1776955024\\.variants\\iteration_1\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1776955024\\.variants\\iteration_1\\variant_1"
         },
         {
           "files_written": [
@@ -23,7 +23,7 @@
             "main.py"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1776955024\\.variants\\iteration_1\\variant_2"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1776955024\\.variants\\iteration_1\\variant_2"
         }
       ],
       "execution": [
@@ -61,6 +61,6 @@
     "build_steps": [],
     "existing_files_to_modify": [],
     "subtasks": [],
-    "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1776955024"
+    "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1776955024"
   }
 }

@@ -1,5 +1,5 @@
 # ╔══════════════════════════════════════════════════════════╗
-# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  Reflexion — Created by Harsh Ashar                        ║
 # ║  github.com/Devil1416                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
@@ -20,7 +20,7 @@ from datetime import datetime
 _PROVENANCE = {
 "author": "Harsh Ashar",
 "github": "github.com/Devil1416",
-"project": "Niggativity",
+"project": "Reflexion",
 "integrity": "02cbc014f0a7",
 }
 # ─── /fingerprint ───────────────────────────────────────────
@@ -316,4 +316,4 @@ _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aX
 
 
 # Original author: Harsh Ashar | github.com/Devil1416
-# This file is part of Niggativity. Tampering with attribution is detectable.
+# This file is part of Reflexion. Tampering with attribution is detectable.

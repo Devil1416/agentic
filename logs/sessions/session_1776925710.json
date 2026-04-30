@@ -5,7 +5,7 @@
   "last_active": "2026-04-23T13:59:53.186803",
   "current_goal": "build this",
   "current_plan": null,
-  "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1776928232",
+  "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1776928232",
   "conversation": [
     {
       "role": "user",
@@ -114,7 +114,7 @@
     },
     {
       "role": "assistant",
-      "content": "Build error: cannot import name 'run' from 'orchestrator' (D:\\n1ggaman\\agentic\\orchestrator.py)",
+      "content": "Build error: cannot import name 'run' from 'orchestrator' (D:\\n1ggaman\\reflexion\\orchestrator.py)",
       "timestamp": "2026-04-23T12:40:32.500248"
     },
     {
@@ -192,7 +192,7 @@
     {
       "type": "error",
       "title": "Build Error",
-      "content": "cannot import name 'run' from 'orchestrator' (D:\\n1ggaman\\agentic\\orchestrator.py)",
+      "content": "cannot import name 'run' from 'orchestrator' (D:\\n1ggaman\\reflexion\\orchestrator.py)",
       "timestamp": "2026-04-23T12:40:32.507171",
       "id": "art_1776928232507"
     }

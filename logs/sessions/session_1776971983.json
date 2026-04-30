@@ -18,19 +18,19 @@
     ],
     "files": [
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1776972083\\main.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1776972083\\main.py",
         "purpose": "Main entry point for the application"
       },
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1776972083\\face_detection.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1776972083\\face_detection.py",
         "purpose": "Contains OpenCV-based face detection logic"
       },
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1776972083\\mask_overlay.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1776972083\\mask_overlay.py",
         "purpose": "Handles superhero mask overlay and bounding box drawing"
       },
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1776972083\\gui.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1776972083\\gui.py",
         "purpose": "Tkinter-based GUI for the application"
       }
     ],
@@ -75,7 +75,7 @@
       }
     ]
   },
-  "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1776972083",
+  "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1776972083",
   "conversation": [
     {
       "role": "user",

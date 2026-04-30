@@ -1,5 +1,5 @@
 # ╔══════════════════════════════════════════════════════════╗
-# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  Reflexion — Created by Harsh Ashar                        ║
 # ║  github.com/Devil1416                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
@@ -20,7 +20,7 @@ from model_router import call_model
 _PROVENANCE = {
 "author": "Harsh Ashar",
 "github": "github.com/Devil1416",
-"project": "Niggativity",
+"project": "Reflexion",
 "integrity": "4d5ed93c968d",
 }
 # ─── /fingerprint ───────────────────────────────────────────
@@ -122,7 +122,7 @@ def _synthesis_prompt(task: str, context: str, decomposition: str, refined_views
     views = []
     for role, text in refined_views.items():
         views.append(f"## {role}\n{_shorten(text, 700)}")
-    return f"""You are niggativity's master synthesizer.
+    return f"""You are reflexion's master synthesizer.
 
 Task:
 {task}
@@ -269,4 +269,4 @@ _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aX
 
 
 # Original author: Harsh Ashar | github.com/Devil1416
-# This file is part of Niggativity. Tampering with attribution is detectable.
+# This file is part of Reflexion. Tampering with attribution is detectable.

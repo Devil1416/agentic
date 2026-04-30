@@ -18,11 +18,11 @@
     ],
     "files": [
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1777265964\\main.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1777265964\\main.py",
         "purpose": "entry point for StyleGAN integration"
       },
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1777265964\\stylegan_integration.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1777265964\\stylegan_integration.py",
         "purpose": "contains code for integrating StyleGAN"
       }
     ],
@@ -33,7 +33,7 @@
     ],
     "existing_files_to_modify": [
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1777265964\\main.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1777265964\\main.py",
         "purpose": "update main entry point to include StyleGAN integration"
       }
     ],
@@ -50,7 +50,7 @@
       }
     ]
   },
-  "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777265964",
+  "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777265964",
   "conversation": [
     {
       "role": "user",

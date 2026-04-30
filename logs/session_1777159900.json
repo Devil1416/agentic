@@ -1,6 +1,6 @@
 {
   "task": "Build a fullstack e-commerce application with a FastAPI backend (Python), a React frontend (JavaScript), and a shared SQLite database. The backend should have CRUD for products and the frontend should display them. Include a README and a setup script. Ensure the backend lives in 'api/' and the frontend lives in 'web/'.",
-  "workspace": "D:\\n1ggaman\\agentic\\workspace\\project_1777157610",
+  "workspace": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157610",
   "started": "2026-04-26T04:24:51.217916",
   "iterations": [
     {
@@ -20,7 +20,7 @@
             "README.md"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157610\\.variants\\iteration_1\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157610\\.variants\\iteration_1\\variant_1"
         },
         {
           "files_written": [
@@ -35,7 +35,7 @@
             "README.md"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157610\\.variants\\iteration_1\\variant_2"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157610\\.variants\\iteration_1\\variant_2"
         }
       ],
       "execution": [
@@ -61,7 +61,7 @@
             "README.md"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157610\\.variants\\iteration_2\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157610\\.variants\\iteration_2\\variant_1"
         }
       ],
       "execution": [
@@ -86,7 +86,7 @@
             "README.md"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157610\\.variants\\iteration_3\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157610\\.variants\\iteration_3\\variant_1"
         }
       ],
       "execution": [
@@ -111,7 +111,7 @@
             "README.md"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157610\\.variants\\iteration_4\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157610\\.variants\\iteration_4\\variant_1"
         }
       ],
       "execution": [
@@ -136,7 +136,7 @@
             "README.md"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157610\\.variants\\iteration_5\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157610\\.variants\\iteration_5\\variant_1"
         }
       ],
       "execution": [
@@ -244,6 +244,6 @@
         ]
       }
     ],
-    "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157610"
+    "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157610"
   }
 }

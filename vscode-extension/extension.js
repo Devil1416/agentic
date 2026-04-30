@@ -1,5 +1,5 @@
 // ╔══════════════════════════════════════════════════════════╗
-// ║  Niggativity — Created by Harsh Ashar                        ║
+// ║  Reflexion — Created by Harsh Ashar                        ║
 // ║  github.com/Devil1416                                    ║
 // ║  Unauthorized reproduction is noticed.                   ║
 // ╚══════════════════════════════════════════════════════════╝
@@ -9,7 +9,7 @@ const vscode = require('vscode');
 const _PROVENANCE = {
     author: "Harsh Ashar",
     github: "github.com/Devil1416",
-    project: "Niggativity",
+    project: "Reflexion",
     integrity: "1f1411b85242",
 };
 // ─── /fingerprint ───────────────────────────────────────────
@@ -19,29 +19,29 @@ const _PROVENANCE = {
  * Main Extension Logic
  */
 function activate(context) {
-    console.log('Niggativity extension is now active');
+    console.log('Reflexion extension is now active');
 
-    const provider = new NiggativityViewProvider(context.extensionUri);
+    const provider = new ReflexionViewProvider(context.extensionUri);
 
     context.subscriptions.push(
-        vscode.window.registerWebviewViewProvider('niggativity-chat', provider)
+        vscode.window.registerWebviewViewProvider('reflexion-chat', provider)
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('niggativity.sendMessage', () => {
-            vscode.commands.executeCommand('niggativity-chat.focus');
+        vscode.commands.registerCommand('reflexion.sendMessage', () => {
+            vscode.commands.executeCommand('reflexion-chat.focus');
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('niggativity.runTask', () => {
-            vscode.commands.executeCommand('niggativity-chat.focus');
+        vscode.commands.registerCommand('reflexion.runTask', () => {
+            vscode.commands.executeCommand('reflexion-chat.focus');
             provider.postMessageToWebview({ type: 'triggerRunTask' });
         })
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('niggativity.insertCode', async () => {
+        vscode.commands.registerCommand('reflexion.insertCode', async () => {
             const editor = vscode.window.activeTextEditor;
             if (editor && provider.lastCodeResponse) {
                 editor.edit(editBuilder => {
@@ -54,7 +54,7 @@ function activate(context) {
     );
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('niggativity.optimizeSelection', async () => {
+        vscode.commands.registerCommand('reflexion.optimizeSelection', async () => {
             const editor = vscode.window.activeTextEditor;
             if (!editor) return;
 
@@ -66,7 +66,7 @@ function activate(context) {
                 return;
             }
 
-            vscode.commands.executeCommand('niggativity-chat.focus');
+            vscode.commands.executeCommand('reflexion-chat.focus');
             
             const prompt = `Please optimize this code. Only return the updated code, no explanations:\n\n\`\`\`\n${text}\n\`\`\``;
             
@@ -76,7 +76,7 @@ function activate(context) {
     );
 }
 
-class NiggativityViewProvider {
+class ReflexionViewProvider {
     constructor(extensionUri) {
         this._extensionUri = extensionUri;
         this._view = null;
@@ -153,7 +153,7 @@ class NiggativityViewProvider {
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Niggativity Chat</title>
+                <title>Reflexion Chat</title>
                 <style>
                     body {
                         font-family: var(--vscode-font-family);
@@ -229,12 +229,12 @@ class NiggativityViewProvider {
             <body>
                 <div id="chat-history">
                     <div class="message assistant">
-                        <strong>Niggativity</strong>
+                        <strong>Reflexion</strong>
                         <div class="message-content">Hello! How can I help you today?</div>
                     </div>
                 </div>
                 <div id="input-container">
-                    <textarea id="chat-input" placeholder="Ask niggativity... (Shift+Enter for new line)"></textarea>
+                    <textarea id="chat-input" placeholder="Ask reflexion... (Shift+Enter for new line)"></textarea>
                     <div class="button-row">
                         <button id="send-btn">Send</button>
                         <button id="run-task-btn">Run Task</button>
@@ -255,4 +255,4 @@ module.exports = {
 
 
 // Original author: Harsh Ashar | github.com/Devil1416
-// This file is part of Niggativity. Tampering with attribution is detectable.
+// This file is part of Reflexion. Tampering with attribution is detectable.

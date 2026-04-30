@@ -1,6 +1,6 @@
 {
   "task": "Build a project that has a lib/utils.py with a fibonacci function and a main.py that uses it. Include a unit test in tests/test_utils.py",
-  "workspace": "D:\\n1ggaman\\agentic\\workspace\\project_1777157713",
+  "workspace": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157713",
   "started": "2026-04-26T04:26:15.432714",
   "iterations": [
     {
@@ -14,7 +14,7 @@
             "tests\\test_utils.py"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157713\\.variants\\iteration_1\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157713\\.variants\\iteration_1\\variant_1"
         },
         {
           "files_written": [
@@ -23,7 +23,7 @@
             "tests\\test_utils.py"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157713\\.variants\\iteration_1\\variant_2"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157713\\.variants\\iteration_1\\variant_2"
         }
       ],
       "execution": [
@@ -43,7 +43,7 @@
             "tests\\test_utils.py"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157713\\.variants\\iteration_2\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157713\\.variants\\iteration_2\\variant_1"
         }
       ],
       "execution": [
@@ -62,7 +62,7 @@
             "tests\\test_utils.py"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157713\\.variants\\iteration_3\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157713\\.variants\\iteration_3\\variant_1"
         }
       ],
       "execution": [
@@ -81,7 +81,7 @@
             "tests\\test_utils.py"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157713\\.variants\\iteration_4\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157713\\.variants\\iteration_4\\variant_1"
         }
       ],
       "execution": [
@@ -100,7 +100,7 @@
             "tests\\test_utils.py"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157713\\.variants\\iteration_5\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157713\\.variants\\iteration_5\\variant_1"
         }
       ],
       "execution": [
@@ -170,6 +170,6 @@
         ]
       }
     ],
-    "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777157713"
+    "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777157713"
   }
 }

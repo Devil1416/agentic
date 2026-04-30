@@ -1,6 +1,6 @@
 {
   "task": "build a banking system that has all the functions it needs and also a backend that stores all the information",
-  "workspace": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486",
+  "workspace": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486",
   "started": "2026-04-26T03:17:46.021429",
   "iterations": [
     {
@@ -24,7 +24,7 @@
             "frontend\\src\\services\\api.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486\\.variants\\iteration_1\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486\\.variants\\iteration_1\\variant_1"
         },
         {
           "files_written": [
@@ -43,7 +43,7 @@
             "frontend\\src\\services\\api.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486\\.variants\\iteration_1\\variant_2"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486\\.variants\\iteration_1\\variant_2"
         }
       ],
       "execution": [
@@ -73,7 +73,7 @@
             "frontend\\src\\services\\api.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486\\.variants\\iteration_2\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486\\.variants\\iteration_2\\variant_1"
         }
       ],
       "execution": [
@@ -102,7 +102,7 @@
             "frontend\\src\\services\\api.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486\\.variants\\iteration_3\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486\\.variants\\iteration_3\\variant_1"
         }
       ],
       "execution": [
@@ -131,7 +131,7 @@
             "frontend\\src\\services\\api.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486\\.variants\\iteration_4\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486\\.variants\\iteration_4\\variant_1"
         }
       ],
       "execution": [
@@ -160,7 +160,7 @@
             "frontend\\src\\services\\api.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486\\.variants\\iteration_5\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486\\.variants\\iteration_5\\variant_1"
         }
       ],
       "execution": [
@@ -295,6 +295,6 @@
         "files": []
       }
     ],
-    "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486"
+    "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486"
   }
 }

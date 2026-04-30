@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # ╔══════════════════════════════════════════════════════════╗
-# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  Reflexion — Created by Harsh Ashar                            ║
 # ║  github.com/Devil1416                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
 """
-cli.py — Interactive conversational CLI for niggativity.
+cli.py — Interactive conversational CLI for reflexion.
 
 Run: python cli.py
 
@@ -22,7 +22,7 @@ import time
 _PROVENANCE = {
 "author": "Harsh Ashar",
 "github": "github.com/Devil1416",
-"project": "Niggativity",
+"project": "Reflexion",
 "integrity": "04b45e93a8f3",
 }
 # ─── /fingerprint ───────────────────────────────────────────
@@ -251,7 +251,7 @@ def should_inject_self_context(user_input: str, intent: str, self_improvement_mo
         return False
     lower_input = user_input.lower()
     if any(k in lower_input for k in ["what can you do", "capabilities", "features"]) or \
-       (intent == "DISCUSS" and any(k in lower_input for k in ["niggativity", "system", "agent", "how do you work"])):
+       (intent == "DISCUSS" and any(k in lower_input for k in ["reflexion", "system", "agent", "how do you work"])):
         return True
     return False
 
@@ -304,7 +304,7 @@ class CLI:
         self._load_self_context()
 
     def _load_self_context(self):
-        md_path = os.path.join(ROOT, "NIGGATIVITY_SELF.md")
+        md_path = os.path.join(ROOT, "REFLEXION_SELF.md")
         if os.path.exists(md_path):
             with open(md_path, "r", encoding="utf-8") as f:
                 self.self_context = f.read()
@@ -414,7 +414,7 @@ class CLI:
                 "tools/executor.py", "agents/conversation_agent.py"
             ]
             plan = {
-                "project_name": "Niggativity Self-Improvement",
+                "project_name": "Reflexion Self-Improvement",
                 "language": "python",
                 "entrypoint": "cli.py",
                 "files": [{"path": f, "purpose": "System core file"} for f in core_files],
@@ -434,7 +434,7 @@ class CLI:
                 print("\nImprovement History:")
                 print(hist.group(1).strip() if hist else "None\n")
             else:
-                print("\n  [SELF] NIGGATIVITY_SELF.md not found.\n")
+                print("\n  [SELF] REFLEXION_SELF.md not found.\n")
                 
         elif cmd == "/limitations":
             if self.self_context:
@@ -443,7 +443,7 @@ class CLI:
                 print("\nKnown Limitations:")
                 print(lim.group(1).strip() if lim else "None\n")
             else:
-                print("\n  [SELF] NIGGATIVITY_SELF.md not found.\n")
+                print("\n  [SELF] REFLEXION_SELF.md not found.\n")
 
         else:
             print(f"\n  Unknown command: {cmd}")
@@ -862,11 +862,11 @@ class CLI:
                     is_self_improve=True
                 )
                 if result and result.get("verdict", {}).get("verdict") == "accept":
-                    md_path = os.path.join(ROOT, "NIGGATIVITY_SELF.md")
+                    md_path = os.path.join(ROOT, "REFLEXION_SELF.md")
                     with open(md_path, "a", encoding="utf-8") as f:
                         from datetime import datetime
                         f.write(f"\n[{datetime.now().strftime('%Y-%m-%d %H:%M')}]\nmodified: core files\nsummary: {goal}\n")
-                    print("  [SELF] niggativity updated successfully")
+                    print("  [SELF] reflexion updated successfully")
                     self._load_self_context()
             else:
                 from orchestrator import run as orchestrator_run
@@ -998,4 +998,4 @@ _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aX
 
 
 # Original author: Harsh Ashar | github.com/Devil1416
-# This file is part of Niggativity. Tampering with attribution is detectable.
+# This file is part of Reflexion. Tampering with attribution is detectable.

@@ -1,10 +1,10 @@
 # ╔══════════════════════════════════════════════════════════╗
-# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  Reflexion — Created by Harsh Ashar                        ║
 # ║  github.com/Devil1416                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
 """
-app/main.py - Niggativity desktop application.
+app/main.py - Reflexion desktop application.
 
 Embeds the local web UI in a native PyQt6 window and either reuses an existing
 backend or launches a managed one with logs written to disk.
@@ -22,7 +22,7 @@ import urllib.request
 _PROVENANCE = {
 "author": "Harsh Ashar",
 "github": "github.com/Devil1416",
-"project": "Niggativity",
+"project": "Reflexion",
 "integrity": "4f1f81bd53e5",
 }
 # ─── /fingerprint ───────────────────────────────────────────
@@ -114,7 +114,7 @@ class LoadingScreen(QWidget):
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.label = QLabel("Starting Niggativity...")
+        self.label = QLabel("Starting Reflexion...")
         self.label.setStyleSheet("color: white; font-size: 24px; font-family: Segoe UI, sans-serif;")
         layout.addWidget(self.label)
 
@@ -133,7 +133,7 @@ class LoadingScreen(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("niggativity")
+        self.setWindowTitle("reflexion")
         self.resize(1280, 860)
         self.setMinimumSize(960, 640)
 
@@ -150,7 +150,7 @@ class MainWindow(QMainWindow):
         """Poll the backend until it's ready, then load the UI."""
         self.attempts += 1
         self.loading.set_status(
-            "Starting Niggativity...",
+            "Starting Reflexion...",
             "Waiting for backend health check." if self.attempts < 6 else "Still warming local services.",
         )
 
@@ -200,4 +200,4 @@ _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aX
 
 
 # Original author: Harsh Ashar | github.com/Devil1416
-# This file is part of Niggativity. Tampering with attribution is detectable.
+# This file is part of Reflexion. Tampering with attribution is detectable.

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # ╔══════════════════════════════════════════════════════════╗
-# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  Reflexion — Created by Harsh Ashar                            ║
 # ║  github.com/Devil1416                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
 """
-main.py — Entry point for niggativity.
+main.py — Entry point for reflexion.
 
 Usage:
     python main.py "Build a Flask REST API with CRUD endpoints for a todo app"
@@ -21,7 +21,7 @@ import io
 _PROVENANCE = {
 "author": "Harsh Ashar",
 "github": "github.com/Devil1416",
-"project": "Niggativity",
+"project": "Reflexion",
 "integrity": "9e68163d3150",
 }
 # ─── /fingerprint ───────────────────────────────────────────
@@ -70,7 +70,7 @@ def run_interactive():
 
     while True:
         try:
-            task = input("niggativity> ").strip()
+            task = input("reflexion> ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\nBye!")
             break
@@ -144,4 +144,4 @@ _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aX
 
 
 # Original author: Harsh Ashar | github.com/Devil1416
-# This file is part of Niggativity. Tampering with attribution is detectable.
+# This file is part of Reflexion. Tampering with attribution is detectable.

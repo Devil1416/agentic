@@ -1,5 +1,5 @@
 # ╔══════════════════════════════════════════════════════════╗
-# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  Reflexion — Created by Harsh Ashar                        ║
 # ║  github.com/Devil1416                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
@@ -21,13 +21,13 @@ from model_router import call_model
 _PROVENANCE = {
 "author": "Harsh Ashar",
 "github": "github.com/Devil1416",
-"project": "Niggativity",
+"project": "Reflexion",
 "integrity": "cacf21dae1c6",
 }
 # ─── /fingerprint ───────────────────────────────────────────
 
 
-INDEX_FILE_NAME = ".niggativity_index.json"
+INDEX_FILE_NAME = ".reflexion_index.json"
 
 IGNORE_DIRS = {
     "node_modules", "__pycache__", ".git", "venv", "env", ".env", "dist", "build", ".next", ".vscode"
@@ -214,4 +214,4 @@ _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aX
 
 
 # Original author: Harsh Ashar | github.com/Devil1416
-# This file is part of Niggativity. Tampering with attribution is detectable.
+# This file is part of Reflexion. Tampering with attribution is detectable.

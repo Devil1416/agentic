@@ -1,10 +1,10 @@
 # ╔══════════════════════════════════════════════════════════╗
-# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  Reflexion — Created by Harsh Ashar                            ║
 # ║  github.com/Devil1416                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
 """
-orchestrator.py - Main execution loop for niggativity.
+orchestrator.py - Main execution loop for reflexion.
 
 PLAN -> BUILD -> EXECUTE -> DEBUG -> JUDGE -> REFINE -> REPEAT
 """
@@ -21,7 +21,7 @@ from datetime import datetime
 _PROVENANCE = {
 "author": "Harsh Ashar",
 "github": "github.com/Devil1416",
-"project": "Niggativity",
+"project": "Reflexion",
 "integrity": "f245b54eb826",
 }
 # ─── /fingerprint ───────────────────────────────────────────
@@ -134,7 +134,7 @@ def generate_plan(task: str, workspace_name: str = None) -> dict:
         pass
 
     print(f"\n{'=' * 60}")
-    print("NIGGATIVITY - Planning Task")
+    print("REFLEXION - Planning Task")
     print(f"{'=' * 60}")
     print(f"Task: {task}")
     print(f"Workspace: {workspace_dir}")
@@ -186,7 +186,7 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
     iteration_limit = _resolve_iteration_limit(plan, max_iterations)
 
     print(f"\n{'=' * 60}")
-    print("NIGGATIVITY - Executing Plan")
+    print("REFLEXION - Executing Plan")
     print(f"{'=' * 60}")
     print(f"Max iterations: {'unlimited' if iteration_limit == 0 else iteration_limit}")
     print()
@@ -536,7 +536,7 @@ def _resolve_iteration_limit(plan: dict, override: int | None) -> int:
     if plan_value is not None:
         return max(0, int(plan_value))
 
-    env_value = os.getenv("NIGGATIVITY_MAX_DEBUG_ITERATIONS")
+    env_value = os.getenv("REFLEXION_MAX_DEBUG_ITERATIONS")
     if env_value:
         try:
             return max(0, int(env_value))
@@ -600,7 +600,7 @@ def _copy_project_tree(src_dir: str, dst_dir: str):
         dirs[:] = [dirname for dirname in dirs if dirname not in IGNORED_DIRS and not dirname.startswith(".")]
 
         for filename in files:
-            if filename == ".niggativity_index.json":
+            if filename == ".reflexion_index.json":
                 continue
             src_file = os.path.join(root, filename)
             rel_path = os.path.normpath(os.path.join(rel_root, filename))
@@ -697,4 +697,4 @@ _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aX
 
 
 # Original author: Harsh Ashar | github.com/Devil1416
-# This file is part of Niggativity. Tampering with attribution is detectable.
+# This file is part of Reflexion. Tampering with attribution is detectable.

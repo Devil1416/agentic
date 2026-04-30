@@ -1,5 +1,5 @@
 # ╔══════════════════════════════════════════════════════════╗
-# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  Reflexion — Created by Harsh Ashar                        ║
 # ║  github.com/Devil1416                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
@@ -22,13 +22,13 @@ from memory.vector_store import get_relevant_context
 _PROVENANCE = {
 "author": "Harsh Ashar",
 "github": "github.com/Devil1416",
-"project": "Niggativity",
+"project": "Reflexion",
 "integrity": "5a4469994f13",
 }
 # ─── /fingerprint ───────────────────────────────────────────
 
 
-CONVERSATION_SYSTEM = """You are niggativity, a local autonomous coding assistant. You are conversational, helpful, and direct.
+CONVERSATION_SYSTEM = """You are reflexion, a local autonomous coding assistant. You are conversational, helpful, and direct.
 
 You are chatting with a developer. Based on their message, decide what to do.
 
@@ -193,7 +193,7 @@ compare tradeoffs, ask follow-up questions. Be concise but insightful.
 Do NOT output JSON. Respond naturally."""
 
     system = (
-        "You are niggativity, a senior developer assistant. "
+        "You are reflexion, a senior developer assistant. "
         "You're having a natural conversation about software. "
         "Be direct, insightful, and opinionated. Keep responses focused and practical. "
         "Ask follow-up questions when the user's intent is unclear."
@@ -225,7 +225,7 @@ Respond briefly and naturally. Keep it short (1-3 sentences). Be friendly.
 Do NOT output JSON. Just respond naturally."""
 
     system = (
-        "You are niggativity, a friendly coding assistant. "
+        "You are reflexion, a friendly coding assistant. "
         "Give brief, natural responses to casual chat. Keep it short."
     )
 
@@ -248,7 +248,7 @@ def ask_clarification(user_input: str, context: str = "") -> str:
 Ask 1-2 specific clarifying questions to understand what they want to build.
 Be brief and direct. Do NOT output JSON."""
 
-    system = "You are niggativity. Ask short, specific clarifying questions. Be direct."
+    system = "You are reflexion. Ask short, specific clarifying questions. Be direct."
 
     print()
     response = call_model_streaming_print(
@@ -392,4 +392,4 @@ _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aX
 
 
 # Original author: Harsh Ashar | github.com/Devil1416
-# This file is part of Niggativity. Tampering with attribution is detectable.
+# This file is part of Reflexion. Tampering with attribution is detectable.

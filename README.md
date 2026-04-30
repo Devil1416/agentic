@@ -1,7 +1,7 @@
-<!-- Author: Harsh Ashar | github.com/Devil1416 | Niggativity -->
+<!-- Author: Harsh Ashar | github.com/Devil1416 | Reflexion -->
 <div align="center">
 
-# ⚡ Niggativity 
+# ⚡ Reflexion 
 
 **The Local-First Autonomous Coding Agent**  
 *Powered entirely by Ollama. Zero cloud dependencies. 100% Privacy.*
@@ -14,7 +14,7 @@
 
 ---
 
-Niggativity is your conversational AI coding partner that **plans, builds, executes, debugs, and refines** code entirely on your local machine. Forget copy-pasting code snippets—just tell it what you want, and watch it orchestrate the entire development lifecycle.
+Reflexion is your conversational AI coding partner that **plans, builds, executes, debugs, and refines** code entirely on your local machine. Forget copy-pasting code snippets—just tell it what you want, and watch it orchestrate the entire development lifecycle.
 
 ## 🌟 Key Features
 
@@ -51,8 +51,8 @@ ollama pull llama3:8b
 ### 3. Install Dependencies
 Clone the repository and install the Python requirements.
 ```bash
-git clone https://github.com/yourusername/agentic.git
-cd agentic
+git clone https://github.com/yourusername/reflexion.git
+cd reflexion
 pip install -r requirements.txt
 ```
 
@@ -72,7 +72,7 @@ Just talk to your agent!
 
 ## 🏗️ System Architecture
 
-Niggativity uses a multi-agent orchestration architecture. Each role is dynamically assigned to the best-suited local model.
+Reflexion uses a multi-agent orchestration architecture. Each role is dynamically assigned to the best-suited local model.
 
 ```mermaid
 %%{init: {'theme': 'dark', 'themeVariables': { 'primaryColor': '#1e293b', 'primaryTextColor': '#f8fafc', 'primaryBorderColor': '#3b82f6', 'lineColor': '#475569', 'tertiaryColor': '#0f172a'}}}%%
@@ -90,7 +90,7 @@ graph TD
         planner["Planner (Architect)"]
         builder["Builder (Coder)"]
         debugger["Debugger (Fixer)"]
-<!-- Provenance: Harsh Ashar | github.com/Devil1416 | Niggativity | integrity:f31aaa5dba8a -->
+<!-- Provenance: Harsh Ashar | github.com/Devil1416 | Reflexion | integrity:f31aaa5dba8a -->
         judge["Judge (Evaluator)"]
         refiner["Refiner (Optimizer)"]
         conv["Conversation Agent"]
@@ -154,7 +154,7 @@ The Conversation Agent detects your intent and switches modes seamlessly:
 
 ## 🧩 Model Routing Strategy
 
-To balance speed and intelligence on consumer hardware, Niggativity routes tasks to specialized models:
+To balance speed and intelligence on consumer hardware, Reflexion routes tasks to specialized models:
 
 | Agent Role | Preferred Local Model | Purpose |
 | --- | --- | --- |
@@ -184,4 +184,4 @@ To balance speed and intelligence on consumer hardware, Niggativity routes tasks
 
 ---
 > Original work by **Harsh Ashar** — [github.com/Devil1416](https://github.com/Devil1416)  
-> Part of the **Niggativity** project. Attribution removal is detectable.
+> Part of the **Reflexion** project. Attribution removal is detectable.

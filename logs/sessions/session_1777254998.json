@@ -5,7 +5,7 @@
   "last_active": "2026-04-27T07:26:48.066269",
   "current_goal": "Build a Flask + SQLite backend (backend/app.py, /tasks CRUD) and a vanilla JS frontend (frontend/index.html, frontend/src/app.js) using IDs task-input, add-btn, task-list; all fetch calls must use http://localhost:5000",
   "current_plan": null,
-  "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777255008",
+  "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777255008",
   "conversation": [
     {
       "role": "user",

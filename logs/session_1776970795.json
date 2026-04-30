@@ -1,6 +1,6 @@
 {
   "task": "Build the project if the file is not found",
-  "workspace": "D:\\n1ggaman\\agentic\\workspace\\project_1776969329",
+  "workspace": "D:\\n1ggaman\\reflexion\\workspace\\project_1776969329",
   "started": "2026-04-24T00:26:35.911995",
   "iterations": [
     {
@@ -12,7 +12,7 @@
             "main.py"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1776969329\\.variants\\iteration_1\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1776969329\\.variants\\iteration_1\\variant_1"
         },
         {
           "files_written": [
@@ -23,7 +23,7 @@
             "main.py"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1776969329\\.variants\\iteration_1\\variant_2"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1776969329\\.variants\\iteration_1\\variant_2"
         }
       ],
       "execution": [
@@ -51,7 +51,7 @@
     "dependencies": [],
     "files": [
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1776969329\\main.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1776969329\\main.py",
         "purpose": "fix file not found errors"
       }
     ],
@@ -73,6 +73,6 @@
         "files": []
       }
     ],
-    "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1776969329"
+    "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1776969329"
   }
 }

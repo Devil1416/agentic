@@ -1,10 +1,10 @@
 // ╔══════════════════════════════════════════════════════════╗
-// ║  Niggativity — Created by Harsh Ashar                        ║
+// ║  Reflexion — Created by Harsh Ashar                        ║
 // ║  github.com/Devil1416                                    ║
 // ║  Unauthorized reproduction is noticed.                   ║
 // ╚══════════════════════════════════════════════════════════╝
 ﻿/**
- * app.js â€” Client-side logic for niggativity Web UI v2.
+ * app.js â€” Client-side logic for Reflexion Web UI v2.
  *
  * Features: SSE streaming, multi-session, artifact display, code copy, file explorer.
  */
@@ -16,7 +16,7 @@ const API = window.location.protocol === 'file:'
 const _PROVENANCE = {
     author: "Harsh Ashar",
     github: "github.com/Devil1416",
-    project: "Niggativity",
+    project: "Reflexion",
     integrity: "e05cc90ace7e",
 };
 // ─── /fingerprint ───────────────────────────────────────────
@@ -340,7 +340,7 @@ function appendMessage(role, content, streaming = false) {
     const div = document.createElement('div');
     div.className = 'message';
     const avatarLabel = role === 'user' ? 'U' : 'âš¡';
-    const roleLabel = role === 'user' ? 'You' : 'niggativity';
+    const roleLabel = role === 'user' ? 'You' : 'Reflexion';
 
     let bodyHTML = '';
     if (streaming && !content) {
@@ -661,7 +661,7 @@ function showToast(message, type = 'info') {
 function reAddWelcome() {
     chatMessages.innerHTML = `
         <div class="welcome" id="welcome-screen">
-            <div class="welcome-logo">niggativity</div>
+            <div class="welcome-logo">Reflexion</div>
             <div class="welcome-sub">Local-first autonomous coding agent.<br>Tell me what to build, debug, or explore.</div>
             <div class="welcome-prompts">
                 <button class="welcome-prompt" data-prompt="Build a REST API with FastAPI and SQLite">Build a REST API</button>
@@ -677,4 +677,4 @@ function reAddWelcome() {
 
 
 // Original author: Harsh Ashar | github.com/Devil1416
-// This file is part of Niggativity. Tampering with attribution is detectable.
+// This file is part of Reflexion. Tampering with attribution is detectable.

@@ -1,6 +1,6 @@
 {
   "task": "Provide instructions on how to run the full-stack todo app (Flask API and JS frontend)",
-  "workspace": "D:\\n1ggaman\\agentic\\workspace\\project_1777238739",
+  "workspace": "D:\\n1ggaman\\reflexion\\workspace\\project_1777238739",
   "started": "2026-04-27T03:21:22.712780",
   "iterations": [
     {
@@ -15,7 +15,7 @@
             "static\\script.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777238739\\.variants\\iteration_1\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777238739\\.variants\\iteration_1\\variant_1"
         },
         {
           "files_written": [
@@ -25,7 +25,7 @@
             "static\\script.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777238739\\.variants\\iteration_1\\variant_2"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777238739\\.variants\\iteration_1\\variant_2"
         }
       ],
       "execution": [
@@ -46,7 +46,7 @@
             "static\\script.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777238739\\.variants\\iteration_2\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777238739\\.variants\\iteration_2\\variant_1"
         }
       ],
       "execution": [
@@ -66,7 +66,7 @@
             "static\\script.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777238739\\.variants\\iteration_3\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777238739\\.variants\\iteration_3\\variant_1"
         }
       ],
       "execution": [
@@ -86,7 +86,7 @@
             "static\\script.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777238739\\.variants\\iteration_4\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777238739\\.variants\\iteration_4\\variant_1"
         }
       ],
       "execution": [
@@ -106,7 +106,7 @@
             "static\\script.js"
           ],
           "errors": [],
-          "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777238739\\.variants\\iteration_5\\variant_1"
+          "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777238739\\.variants\\iteration_5\\variant_1"
         }
       ],
       "execution": [
@@ -178,6 +178,6 @@
         "files": []
       }
     ],
-    "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777238739"
+    "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777238739"
   }
 }

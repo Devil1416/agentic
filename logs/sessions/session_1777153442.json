@@ -3,7 +3,7 @@
   "title": "build a banking system that has all the functions it needs a\u2026",
   "created": "2026-04-26T03:14:02.425099",
   "last_active": "2026-04-26T03:52:41.075716",
-  "current_goal": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486 run this app and debug it",
+  "current_goal": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486 run this app and debug it",
   "current_plan": {
     "project_name": "Advanced Banking System",
     "description": "A full-featured banking system allowing users to manage accounts, perform deposits, withdrawals, and transfers, with secure authentication and persistent data storage.",
@@ -136,7 +136,7 @@
       }
     ]
   },
-  "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486",
+  "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486",
   "conversation": [
     {
       "role": "user",
@@ -155,12 +155,12 @@
     },
     {
       "role": "user",
-      "content": "D:\\n1ggaman\\agentic\\workspace\\project_1777153486 run this app and debug it",
+      "content": "D:\\n1ggaman\\reflexion\\workspace\\project_1777153486 run this app and debug it",
       "timestamp": "2026-04-26T03:52:33.670394"
     },
     {
       "role": "assistant",
-      "content": "Executing: D:\\n1ggaman\\agentic\\workspace\\project_1777153486 run this app and debug it",
+      "content": "Executing: D:\\n1ggaman\\reflexion\\workspace\\project_1777153486 run this app and debug it",
       "timestamp": "2026-04-26T03:52:41.075700"
     }
   ],

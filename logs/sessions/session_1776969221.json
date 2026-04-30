@@ -18,15 +18,15 @@
     ],
     "files": [
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1776969329\\main.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1776969329\\main.py",
         "purpose": "Project entrypoint, handles face detection and mask swapping"
       },
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1776969329\\face_detection.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1776969329\\face_detection.py",
         "purpose": "Detects face outline using OpenCV"
       },
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1776969329\\mask_swapper.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1776969329\\mask_swapper.py",
         "purpose": "Swaps superhero masks that change every few milliseconds"
       }
     ],
@@ -54,7 +54,7 @@
       }
     ]
   },
-  "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1776969329",
+  "workspace_dir": "D:\\n1ggaman\\reflexion\\workspace\\project_1776969329",
   "conversation": [
     {
       "role": "user",

@@ -1,8 +1,8 @@
-<!-- Author: Harsh Ashar | github.com/Devil1416 | Niggativity -->
-# NIGGATIVITY SYSTEM KNOWLEDGE
+<!-- Author: Harsh Ashar | github.com/Devil1416 | Reflexion -->
+# REFLEXION SYSTEM KNOWLEDGE
 
 ## System Overview
-Niggativity is a local-first autonomous coding assistant powered by Ollama. It features a conversational CLI, full-stack application building capabilities, deterministic self-healing loops, and an execution environment.
+Reflexion is a local-first autonomous coding assistant powered by Ollama. It features a conversational CLI, full-stack application building capabilities, deterministic self-healing loops, and an execution environment.
 
 ## Current Capabilities
 - **Agents**: Planner, Builder, Debugger, Judge, Refiner, Conversation Agent
@@ -17,19 +17,19 @@ Niggativity is a local-first autonomous coding assistant powered by Ollama. It f
 - **agents/judge.py**: agents/judge.py — Solution evaluation agent.
 - **agents/planner.py**: agents/planner.py — Planning agent.
 - **agents/refiner.py**: agents/refiner.py — Code optimization and patch agent.
-- **app/main.py**: app/main.py - Niggativity desktop application.
+- **app/main.py**: app/main.py - Reflexion desktop application.
 - **backend/__init__.py**: No description available.
-- **backend/server.py**: backend/server.py — FastAPI server bridging UI/VSCode to the niggativity orchestrator.
-- **cli.py**: cli.py — Interactive conversational CLI for niggativity.
-<!-- Provenance: Harsh Ashar | github.com/Devil1416 | Niggativity | integrity:d3972cbea442 -->
-- **main.py**: main.py — Entry point for niggativity.
+- **backend/server.py**: backend/server.py — FastAPI server bridging UI/VSCode to the reflexion orchestrator.
+- **cli.py**: cli.py — Interactive conversational CLI for reflexion.
+<!-- Provenance: Harsh Ashar | github.com/Devil1416 | Reflexion | integrity:d3972cbea442 -->
+- **main.py**: main.py — Entry point for reflexion.
 - **memory/__init__.py**: No description available.
 - **memory/vector_store.py**: memory/vector_store.py - Persistent memory via FAISS + sentence-transformers.
 - **model_router.py**: model_router.py - Ollama model routing with speed and reliability safeguards.
-- **orchestrator.py**: orchestrator.py - Main execution loop for niggativity.
+- **orchestrator.py**: orchestrator.py - Main execution loop for reflexion.
 - **patch_builder.py**: No description available.
 - **scripts/generate_self_md.py**: No description available.
-- **start.py**: start.py - Launcher for the niggativity multi-interface system.
+- **start.py**: start.py - Launcher for the reflexion multi-interface system.
 - **thinking_engine.py**: thinking_engine.py - Multi-agent thinking and synthesis engine.
 - **tool_registry.py**: tool_registry.py — Central tool registration, parsing, and dispatch.
 - **tools/__init__.py**: No description available.
@@ -47,4 +47,4 @@ Niggativity is a local-first autonomous coding assistant powered by Ollama. It f
 
 ---
 > Original work by **Harsh Ashar** — [github.com/Devil1416](https://github.com/Devil1416)  
-> Part of the **Niggativity** project. Attribution removal is detectable.
+> Part of the **Reflexion** project. Attribution removal is detectable.

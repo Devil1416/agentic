@@ -1,6 +1,6 @@
 {
   "task": "build a simple python based calculator app that does all basic mathematical operations",
-  "workspace": "D:\\n1ggaman\\agentic\\workspace\\project_1776779629",
+  "workspace": "D:\\n1ggaman\\reflexion\\workspace\\project_1776779629",
   "started": "2026-04-21T19:23:49.928582",
   "iterations": [
     {
@@ -9,10 +9,10 @@
       "variants": [
         {
           "files_written": [
-            "D:\\n1ggaman\\agentic\\workspace\\project_1776779629\\calculator.py",
-            "D:\\n1ggaman\\agentic\\workspace\\project_1776779629\\__init__.py",
-            "D:\\n1ggaman\\agentic\\workspace\\project_1776779629\\calculator.py",
-            "D:\\n1ggaman\\agentic\\workspace\\project_1776779629\\__init__.py"
+            "D:\\n1ggaman\\reflexion\\workspace\\project_1776779629\\calculator.py",
+            "D:\\n1ggaman\\reflexion\\workspace\\project_1776779629\\__init__.py",
+            "D:\\n1ggaman\\reflexion\\workspace\\project_1776779629\\calculator.py",
+            "D:\\n1ggaman\\reflexion\\workspace\\project_1776779629\\__init__.py"
           ],
           "errors": []
         }
@@ -43,11 +43,11 @@
     ],
     "files": [
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1776779629\\calculator.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1776779629\\calculator.py",
         "purpose": "Main application file that defines the calculator's functionality"
       },
       {
-        "path": "D:\\n1ggaman\\agentic\\workspace\\project_1776779629\\__init__.py",
+        "path": "D:\\n1ggaman\\reflexion\\workspace\\project_1776779629\\__init__.py",
         "purpose": "Initialization file for the project, required by Python for package imports"
       }
     ],

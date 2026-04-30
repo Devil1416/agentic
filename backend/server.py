@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # ╔══════════════════════════════════════════════════════════╗
-# ║  Niggativity — Created by Harsh Ashar                        ║
+# ║  Reflexion — Created by Harsh Ashar                            ║
 # ║  github.com/Devil1416                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
 """
-backend/server.py — FastAPI server bridging UI/VSCode to the niggativity orchestrator.
+backend/server.py — FastAPI server bridging UI/VSCode to the reflexion orchestrator.
 
 Start: python backend/server.py
 
@@ -31,7 +31,7 @@ from typing import Optional
 _PROVENANCE = {
 "author": "Harsh Ashar",
 "github": "github.com/Devil1416",
-"project": "Niggativity",
+"project": "Reflexion",
 "integrity": "a117573ac8f0",
 }
 # ─── /fingerprint ───────────────────────────────────────────
@@ -59,7 +59,7 @@ from memory.vector_store import get_relevant_context
 
 UI_DIR = os.path.join(ROOT, "ui")
 
-app = FastAPI(title="niggativity API", version="2.0.0")
+app = FastAPI(title="Reflexion API", version="2.0.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True,
                    allow_methods=["*"], allow_headers=["*"])
 
@@ -116,7 +116,7 @@ async def root():
     session = get_session()
     return {
         "status": "ok",
-        "service": "niggativity",
+        "service": "reflexion",
         "version": "2.0.0",
         "models": len(models),
         "session_id": session.session_id,
@@ -199,7 +199,7 @@ RULES:
 - Be direct and useful
 - Use markdown formatting for structure"""
 
-    sys_prompt = ("You are niggativity, a local autonomous coding assistant. "
+    sys_prompt = ("You are Reflexion, a local autonomous coding assistant. "
                   "Be direct, insightful, and practical. Use markdown formatting.")
 
     # Check if thinking mode is forced by session state or request
@@ -540,7 +540,7 @@ app.mount("/ui", StaticFiles(directory=UI_DIR), name="ui-static")
 if __name__ == "__main__":
     import uvicorn
     print("\n" + "="*60)
-    print("  NIGGATIVITY — API Server v2.0 (RESTARTED)")
+    print("  REFLEXION — API Server v2.0 (RESTARTED)")
     print("="*60)
     print("  Backend: http://localhost:8000")
     print("  Docs:    http://localhost:8000/docs")
@@ -554,4 +554,4 @@ _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aX
 
 
 # Original author: Harsh Ashar | github.com/Devil1416
-# This file is part of Niggativity. Tampering with attribution is detectable.
+# This file is part of Reflexion. Tampering with attribution is detectable.
