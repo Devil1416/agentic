@@ -1,4 +1,4 @@
-<!-- Author: Harsh Ashar | github.com/Devil1416 | Reflexion -->
+<!-- Author: Harsh Ashar | github.com/doriangraypng | Reflexion -->
 # REFLEXION SYSTEM KNOWLEDGE
 
 ## System Overview
@@ -21,7 +21,7 @@ Reflexion is a local-first autonomous coding assistant powered by Ollama. It fea
 - **backend/__init__.py**: No description available.
 - **backend/server.py**: backend/server.py — FastAPI server bridging UI/VSCode to the reflexion orchestrator.
 - **cli.py**: cli.py — Interactive conversational CLI for reflexion.
-<!-- Provenance: Harsh Ashar | github.com/Devil1416 | Reflexion | integrity:d3972cbea442 -->
+<!-- Provenance: Harsh Ashar | github.com/doriangraypng | Reflexion | integrity:d3972cbea442 -->
 - **main.py**: main.py — Entry point for reflexion.
 - **memory/__init__.py**: No description available.
 - **memory/vector_store.py**: memory/vector_store.py - Persistent memory via FAISS + sentence-transformers.
@@ -46,5 +46,5 @@ Reflexion is a local-first autonomous coding assistant powered by Ollama. It fea
 ## Improvement History
 
 ---
-> Original work by **Harsh Ashar** — [github.com/Devil1416](https://github.com/Devil1416)  
+> Original work by **Harsh Ashar** — [github.com/doriangraypng](https://github.com/doriangraypng)  
 > Part of the **Reflexion** project. Attribution removal is detectable.

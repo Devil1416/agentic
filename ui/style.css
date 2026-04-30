@@ -1,7 +1,7 @@
 /*
  * ╔══════════════════════════════════════════════════════════╗
  * ║  Reflexion — Created by Harsh Ashar                        ║
- * ║  github.com/Devil1416                                    ║
+ * ║  github.com/doriangraypng                                    ║
  * ║  Unauthorized reproduction is noticed.                   ║
  * ╚══════════════════════════════════════════════════════════╝
  */
@@ -203,9 +203,9 @@ html, body { height: 100%; font-family: var(--font-sans); font-size: 14px; color
 /* provenance seal */
 :root {
   --author: "Harsh Ashar";
-  --github: "github.com/Devil1416";
+  --github: "github.com/doriangraypng";
   --project: "Reflexion";
   --integrity: "866f20c4888f";
 }
 
-/* Original author: Harsh Ashar | github.com/Devil1416 | Part of Reflexion */
+/* Original author: Harsh Ashar | github.com/doriangraypng | Part of Reflexion */

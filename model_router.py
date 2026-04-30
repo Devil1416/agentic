@@ -1,6 +1,6 @@
 # ╔══════════════════════════════════════════════════════════╗
 # ║  Reflexion — Created by Harsh Ashar                        ║
-# ║  github.com/Devil1416                                    ║
+# ║  github.com/doriangraypng                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
 """
@@ -19,7 +19,7 @@ import requests
 # ─── fingerprint ────────────────────────────────────────────
 _PROVENANCE = {
 "author": "Harsh Ashar",
-"github": "github.com/Devil1416",
+"github": "github.com/doriangraypng",
 "project": "Reflexion",
 "integrity": "8c9fca50dc7e",
 }
@@ -338,5 +338,5 @@ def call_model_streaming_print(role: str, prompt: str,
 _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
 
 
-# Original author: Harsh Ashar | github.com/Devil1416
+# Original author: Harsh Ashar | github.com/doriangraypng
 # This file is part of Reflexion. Tampering with attribution is detectable.

@@ -1,6 +1,6 @@
 # ╔══════════════════════════════════════════════════════════╗
 # ║  Reflexion — Created by Harsh Ashar                        ║
-# ║  github.com/Devil1416                                    ║
+# ║  github.com/doriangraypng                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
 """
@@ -15,7 +15,7 @@ import re
 # ─── fingerprint ────────────────────────────────────────────
 _PROVENANCE = {
 "author": "Harsh Ashar",
-"github": "github.com/Devil1416",
+"github": "github.com/doriangraypng",
 "project": "Reflexion",
 "integrity": "df1915d6298f",
 }
@@ -162,5 +162,5 @@ def _parse_simple_diff(diff: str) -> list[dict]:
 _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
 
 
-# Original author: Harsh Ashar | github.com/Devil1416
+# Original author: Harsh Ashar | github.com/doriangraypng
 # This file is part of Reflexion. Tampering with attribution is detectable.

@@ -1,6 +1,6 @@
 # ╔══════════════════════════════════════════════════════════╗
 # ║  Reflexion — Created by Harsh Ashar                        ║
-# ║  github.com/Devil1416                                    ║
+# ║  github.com/doriangraypng                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
 """
@@ -19,7 +19,7 @@ from model_router import call_model
 # ─── fingerprint ────────────────────────────────────────────
 _PROVENANCE = {
 "author": "Harsh Ashar",
-"github": "github.com/Devil1416",
+"github": "github.com/doriangraypng",
 "project": "Reflexion",
 "integrity": "4d5ed93c968d",
 }
@@ -268,5 +268,5 @@ def synthesize_thought(task: str, context: str) -> Generator[str, None, None]:
 _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
 
 
-# Original author: Harsh Ashar | github.com/Devil1416
+# Original author: Harsh Ashar | github.com/doriangraypng
 # This file is part of Reflexion. Tampering with attribution is detectable.

@@ -1,6 +1,6 @@
 // ╔══════════════════════════════════════════════════════════╗
 // ║  Reflexion — Created by Harsh Ashar                        ║
-// ║  github.com/Devil1416                                    ║
+// ║  github.com/doriangraypng                                    ║
 // ║  Unauthorized reproduction is noticed.                   ║
 // ╚══════════════════════════════════════════════════════════╝
 const vscode = acquireVsCodeApi();
@@ -8,7 +8,7 @@ const vscode = acquireVsCodeApi();
 // ─── fingerprint ────────────────────────────────────────────
 const _PROVENANCE = {
     author: "Harsh Ashar",
-    github: "github.com/Devil1416",
+    github: "github.com/doriangraypng",
     project: "Reflexion",
     integrity: "a363c2dddd0d",
 };
@@ -185,5 +185,5 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Original author: Harsh Ashar | github.com/Devil1416
+// Original author: Harsh Ashar | github.com/doriangraypng
 // This file is part of Reflexion. Tampering with attribution is detectable.

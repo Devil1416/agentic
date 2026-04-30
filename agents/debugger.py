@@ -1,6 +1,6 @@
 # ╔══════════════════════════════════════════════════════════╗
 # ║  Reflexion — Created by Harsh Ashar                        ║
-# ║  github.com/Devil1416                                    ║
+# ║  github.com/doriangraypng                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
 """
@@ -18,7 +18,7 @@ from memory.vector_store import get_relevant_context, add_memory
 # ─── fingerprint ────────────────────────────────────────────
 _PROVENANCE = {
 "author": "Harsh Ashar",
-"github": "github.com/Devil1416",
+"github": "github.com/doriangraypng",
 "project": "Reflexion",
 "integrity": "addcf2a82b51",
 }
@@ -202,5 +202,5 @@ Start by reading the file mentioned in the error trace."""
 _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
 
 
-# Original author: Harsh Ashar | github.com/Devil1416
+# Original author: Harsh Ashar | github.com/doriangraypng
 # This file is part of Reflexion. Tampering with attribution is detectable.

@@ -1,4 +1,4 @@
-<!-- Author: Harsh Ashar | github.com/Devil1416 | Reflexion -->
+<!-- Author: Harsh Ashar | github.com/doriangraypng | Reflexion -->
 <div align="center">
 
 # ⚡ Reflexion 
@@ -90,7 +90,6 @@ graph TD
         planner["Planner (Architect)"]
         builder["Builder (Coder)"]
         debugger["Debugger (Fixer)"]
-<!-- Provenance: Harsh Ashar | github.com/Devil1416 | Reflexion | integrity:f31aaa5dba8a -->
         judge["Judge (Evaluator)"]
         refiner["Refiner (Optimizer)"]
         conv["Conversation Agent"]
@@ -121,6 +120,8 @@ graph TD
     orch --> git
     orch --> diff
 ```
+
+<!-- Provenance: Harsh Ashar | github.com/doriangraypng | Reflexion | integrity:f31aaa5dba8a -->
 
 ---
 
@@ -183,5 +184,5 @@ To balance speed and intelligence on consumer hardware, Reflexion routes tasks t
 </div>
 
 ---
-> Original work by **Harsh Ashar** — [github.com/Devil1416](https://github.com/Devil1416)  
+> Original work by **Harsh Ashar** — [github.com/doriangraypng](https://github.com/doriangraypng)  
 > Part of the **Reflexion** project. Attribution removal is detectable.

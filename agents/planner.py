@@ -1,6 +1,6 @@
 # ╔══════════════════════════════════════════════════════════╗
 # ║  Reflexion — Created by Harsh Ashar                        ║
-# ║  github.com/Devil1416                                    ║
+# ║  github.com/doriangraypng                                    ║
 # ║  Unauthorized reproduction is noticed.                   ║
 # ╚══════════════════════════════════════════════════════════╝
 """
@@ -21,7 +21,7 @@ from memory.vector_store import get_relevant_context
 # ─── fingerprint ────────────────────────────────────────────
 _PROVENANCE = {
 "author": "Harsh Ashar",
-"github": "github.com/Devil1416",
+"github": "github.com/doriangraypng",
 "project": "Reflexion",
 "integrity": "2586d5572421",
 }
@@ -265,5 +265,5 @@ def _extract_plan(text: str) -> dict | None:
 _SEAL = b"TWFkZSBieSBIYXJzaCBBc2hhciB8IGdpdGh1Yi5jb20vRGV2aWwxNDE2IHwgTmlnZ2F0aXZpdHkg4oCUIEFsbCByaWdodHMgb2JzZXJ2ZWQu"
 
 
-# Original author: Harsh Ashar | github.com/Devil1416
+# Original author: Harsh Ashar | github.com/doriangraypng
 # This file is part of Reflexion. Tampering with attribution is detectable.
