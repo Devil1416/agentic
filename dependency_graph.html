@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reflexion — Dependency Graph</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #07080d; color: #e2e8f0; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; height: 100vh; }
+
+  #canvas { width: 100vw; height: 100vh; }
+
+  .node circle { stroke-width: 1.5; cursor: pointer; transition: r 0.2s; }
+  .node circle:hover { stroke-width: 3; filter: brightness(1.4); }
+  .node text { pointer-events: none; font-size: 11px; fill: #cbd5e1; font-family: 'Fira Code', monospace; }
+
+  .link { stroke: #334155; stroke-opacity: 0.55; stroke-width: 1.2; fill: none; marker-end: url(#arrow); }
+  .link.highlight { stroke: #7c3aed; stroke-opacity: 1; stroke-width: 2; }
+
+  #panel {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 56px;
+    background: rgba(7,8,13,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid #1e293b;
+    display: flex; align-items: center; padding: 0 24px; gap: 16px; z-index: 100;
+  }
+  #panel h1 { font-size: 15px; font-weight: 700; color: #a78bfa; letter-spacing: 0.04em; }
+  #panel .sub { font-size: 12px; color: #475569; margin-left: 4px; }
+  #search {
+    margin-left: auto; background: #0f172a; border: 1px solid #1e293b; color: #e2e8f0;
+    padding: 6px 12px; border-radius: 8px; font-size: 12px; width: 200px; outline: none;
+  }
+  #search:focus { border-color: #7c3aed; }
+
+  #legend {
+    position: fixed; bottom: 24px; left: 24px; background: rgba(7,8,13,0.88);
+    backdrop-filter: blur(8px); border: 1px solid #1e293b; border-radius: 12px;
+    padding: 14px 18px; font-size: 11px; z-index: 100;
+  }
+  #legend h3 { font-size: 11px; color: #64748b; margin-bottom: 8px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .leg-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  #tooltip {
+    position: fixed; pointer-events: none; background: rgba(15,23,42,0.97);
+    border: 1px solid #334155; border-radius: 10px; padding: 12px 16px;
+    font-size: 12px; max-width: 280px; z-index: 200; display: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  #tooltip .tt-title { font-weight: 700; color: #a78bfa; margin-bottom: 6px; word-break: break-all; }
+  #tooltip .tt-row { color: #94a3b8; margin: 2px 0; }
+  #tooltip .tt-val { color: #e2e8f0; }
+
+  #controls {
+    position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; gap: 8px; z-index: 100;
+  }
+  .ctrl-btn {
+    width: 36px; height: 36px; border-radius: 8px; border: 1px solid #1e293b;
+    background: rgba(7,8,13,0.88); color: #94a3b8; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .ctrl-btn:hover { border-color: #7c3aed; color: #a78bfa; }
+
+  #stats {
+    position: fixed; top: 68px; right: 24px; background: rgba(7,8,13,0.82);
+    backdrop-filter: blur(8px); border: 1px solid #1e293b; border-radius: 10px;
+    padding: 10px 16px; font-size: 11px; color: #64748b; z-index: 100; line-height: 1.8;
+  }
+  #stats span { color: #a78bfa; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div id="panel">
+  <h1>⚡ Reflexion</h1>
+  <span class="sub">Dependency Graph</span>
+  <input id="search" type="text" placeholder="Filter nodes…">
+</div>
+
+<div id="stats">
+  Nodes: <span id="s-nodes">0</span> &nbsp;|&nbsp; Edges: <span id="s-edges">0</span><br>
+  Selected: <span id="s-selected">—</span>
+</div>
+
+<div id="tooltip">
+  <div class="tt-title" id="tt-title"></div>
+  <div class="tt-row">Group: <span class="tt-val" id="tt-group"></span></div>
+  <div class="tt-row">Size: <span class="tt-val" id="tt-size"></span></div>
+  <div class="tt-row">Imports: <span class="tt-val" id="tt-imports"></span></div>
+  <div class="tt-row">Imported by: <span class="tt-val" id="tt-importedby"></span></div>
+</div>
+
+<div id="legend">
+  <h3>Groups</h3>
+</div>
+
+<div id="controls">
+  <button class="ctrl-btn" id="btn-reset" title="Reset zoom">⊙</button>
+  <button class="ctrl-btn" id="btn-freeze" title="Toggle physics">⏸</button>
+</div>
+
+<svg id="canvas"></svg>
+
+<script>
+const GRAPH = {"nodes":[{"id":"cli.py","size":19464,"lang":"python","group":"root"},{"id":"main.py","size":4313,"lang":"python","group":"root"},{"id":"model_router.py","size":11321,"lang":"python","group":"root"},{"id":"orchestrator.py","size":31171,"lang":"python","group":"root"},{"id":"orchestrator_parallel.py","size":16917,"lang":"python","group":"root"},{"id":"start.py","size":2880,"lang":"python","group":"root"},{"id":"thinking_engine.py","size":8028,"lang":"python","group":"root"},{"id":"tool_registry.py","size":6508,"lang":"python","group":"root"},{"id":"agents/builder.py","size":9326,"lang":"python","group":"agents"},{"id":"agents/conversation_agent.py","size":12189,"lang":"python","group":"agents"},{"id":"agents/debugger.py","size":6834,"lang":"python","group":"agents"},{"id":"agents/judge.py","size":11237,"lang":"python","group":"agents"},{"id":"agents/planner.py","size":8961,"lang":"python","group":"agents"},{"id":"agents/refiner.py","size":7714,"lang":"python","group":"agents"},{"id":"agents/__init__.py","size":894,"lang":"python","group":"agents"},{"id":"api/app.py","size":3197,"lang":"python","group":"api"},{"id":"api/models.py","size":2874,"lang":"python","group":"api"},{"id":"api/routes.py","size":18975,"lang":"python","group":"api"},{"id":"api/__init__.py","size":299,"lang":"python","group":"api"},{"id":"app/main.py","size":6546,"lang":"python","group":"app"},{"id":"backend/server.py","size":1183,"lang":"python","group":"backend"},{"id":"codebase/indexer.py","size":7542,"lang":"python","group":"codebase"},{"id":"codebase/retriever.py","size":4761,"lang":"python","group":"codebase"},{"id":"config/settings.py","size":2975,"lang":"python","group":"config"},{"id":"config/__init__.py","size":378,"lang":"python","group":"config"},{"id":"memory/vector_store.py","size":7908,"lang":"python","group":"memory"},{"id":"memory/__init__.py","size":894,"lang":"python","group":"memory"},{"id":"providers/base.py","size":1946,"lang":"python","group":"providers"},{"id":"providers/ollama_provider.py","size":4274,"lang":"python","group":"providers"},{"id":"providers/registry.py","size":3586,"lang":"python","group":"providers"},{"id":"providers/__init__.py","size":619,"lang":"python","group":"providers"},{"id":"scripts/generate_self_md.py","size":3288,"lang":"python","group":"scripts"},{"id":"session/session_manager.py","size":11635,"lang":"python","group":"session"},{"id":"session/__init__.py","size":895,"lang":"python","group":"session"},{"id":"tools/diff_editor.py","size":4947,"lang":"python","group":"tools"},{"id":"tools/executor.py","size":10462,"lang":"python","group":"tools"},{"id":"tools/fs.py","size":2282,"lang":"python","group":"tools"},{"id":"tools/git_tools.py","size":3132,"lang":"python","group":"tools"},{"id":"tools/vision.py","size":4333,"lang":"python","group":"tools"},{"id":"tools/__init__.py","size":893,"lang":"python","group":"tools"},{"id":"ui/app.js","size":26494,"lang":"js","group":"ui"},{"id":"utils/command_parser.py","size":2898,"lang":"python","group":"utils"},{"id":"utils/__init__.py","size":893,"lang":"python","group":"utils"},{"id":"vscode-extension/extension.js","size":9520,"lang":"js","group":"vscode-extension"},{"id":"vscode-extension/media/chat-panel.js","size":7064,"lang":"js","group":"vscode-extension"}],"edges":[{"from":"cli.py","to":"session/session_manager.py"},{"from":"cli.py","to":"model_router.py"},{"from":"cli.py","to":"orchestrator.py"},{"from":"cli.py","to":"agents/conversation_agent.py"},{"from":"cli.py","to":"memory/vector_store.py"},{"from":"main.py","to":"orchestrator.py"},{"from":"orchestrator.py","to":"agents/builder.py"},{"from":"orchestrator.py","to":"agents/debugger.py"},{"from":"orchestrator.py","to":"agents/judge.py"},{"from":"orchestrator.py","to":"agents/planner.py"},{"from":"orchestrator.py","to":"agents/refiner.py"},{"from":"orchestrator.py","to":"memory/vector_store.py"},{"from":"orchestrator.py","to":"model_router.py"},{"from":"orchestrator.py","to":"tool_registry.py"},{"from":"orchestrator.py","to":"tools/diff_editor.py"},{"from":"orchestrator.py","to":"tools/executor.py"},{"from":"orchestrator.py","to":"tools/fs.py"},{"from":"orchestrator.py","to":"tools/git_tools.py"},{"from":"orchestrator.py","to":"tools/vision.py"},{"from":"orchestrator.py","to":"codebase/indexer.py"},{"from":"orchestrator.py","to":"orchestrator_parallel.py"},{"from":"orchestrator_parallel.py","to":"model_router.py"},{"from":"orchestrator_parallel.py","to":"tools/executor.py"},{"from":"orchestrator_parallel.py","to":"tools/fs.py"},{"from":"orchestrator_parallel.py","to":"agents/builder.py"},{"from":"orchestrator_parallel.py","to":"agents/debugger.py"},{"from":"orchestrator_parallel.py","to":"agents/refiner.py"},{"from":"orchestrator_parallel.py","to":"agents/planner.py"},{"from":"orchestrator_parallel.py","to":"agents/judge.py"},{"from":"orchestrator_parallel.py","to":"orchestrator.py"},{"from":"thinking_engine.py","to":"model_router.py"},{"from":"agents/builder.py","to":"model_router.py"},{"from":"agents/builder.py","to":"tool_registry.py"},{"from":"agents/builder.py","to":"tools/diff_editor.py"},{"from":"agents/conversation_agent.py","to":"model_router.py"},{"from":"agents/conversation_agent.py","to":"memory/vector_store.py"},{"from":"agents/conversation_agent.py","to":"tool_registry.py"},{"from":"agents/debugger.py","to":"model_router.py"},{"from":"agents/debugger.py","to":"tool_registry.py"},{"from":"agents/debugger.py","to":"memory/vector_store.py"},{"from":"agents/judge.py","to":"model_router.py"},{"from":"agents/planner.py","to":"model_router.py"},{"from":"agents/planner.py","to":"tool_registry.py"},{"from":"agents/planner.py","to":"memory/vector_store.py"},{"from":"agents/planner.py","to":"codebase/retriever.py"},{"from":"agents/refiner.py","to":"model_router.py"},{"from":"agents/refiner.py","to":"tool_registry.py"},{"from":"api/app.py","to":"api/routes.py"},{"from":"api/app.py","to":"config/settings.py"},{"from":"api/app.py","to":"providers/registry.py"},{"from":"api/app.py","to":"model_router.py"},{"from":"api/app.py","to":"memory/vector_store.py"},{"from":"api/routes.py","to":"api/models.py"},{"from":"api/routes.py","to":"config/settings.py"},{"from":"api/routes.py","to":"model_router.py"},{"from":"api/routes.py","to":"session/session_manager.py"},{"from":"api/routes.py","to":"orchestrator.py"},{"from":"api/routes.py","to":"memory/vector_store.py"},{"from":"backend/server.py","to":"config/settings.py"},{"from":"codebase/indexer.py","to":"model_router.py"},{"from":"codebase/retriever.py","to":"codebase/indexer.py"},{"from":"providers/ollama_provider.py","to":"providers/base.py"},{"from":"providers/registry.py","to":"providers/base.py"},{"from":"providers/registry.py","to":"providers/ollama_provider.py"},{"from":"providers/__init__.py","to":"providers/base.py"},{"from":"providers/__init__.py","to":"providers/ollama_provider.py"},{"from":"providers/__init__.py","to":"providers/registry.py"},{"from":"tools/git_tools.py","to":"tools/executor.py"}]};
+
+// ── Colour palette per group ───────────────────────────────
+const PALETTE = {
+  root:             "#7c3aed",
+  agents:           "#06b6d4",
+  api:              "#f59e0b",
+  app:              "#ec4899",
+  backend:          "#14b8a6",
+  codebase:         "#84cc16",
+  config:           "#fb923c",
+  memory:           "#a78bfa",
+  providers:        "#34d399",
+  scripts:          "#94a3b8",
+  session:          "#f472b6",
+  tools:            "#60a5fa",
+  ui:               "#fbbf24",
+  utils:            "#818cf8",
+  "vscode-extension": "#4ade80",
+};
+
+const groups = [...new Set(GRAPH.nodes.map(n => n.group))].sort();
+
+// Build legend
+const leg = document.getElementById("legend");
+groups.forEach(g => {
+  const row = document.createElement("div");
+  row.className = "leg-row";
+  row.innerHTML = `<div class="leg-dot" style="background:${PALETTE[g]||'#64748b'}"></div><span style="color:#cbd5e1">${g}</span>`;
+  leg.appendChild(row);
+});
+
+// ── D3 force simulation ────────────────────────────────────
+const W = window.innerWidth, H = window.innerHeight;
+const svg = d3.select("#canvas").attr("width", W).attr("height", H);
+
+// Arrow marker
+svg.append("defs").append("marker")
+  .attr("id","arrow").attr("viewBox","0 -4 8 8").attr("refX",18).attr("refY",0)
+  .attr("markerWidth",6).attr("markerHeight",6).attr("orient","auto")
+  .append("path").attr("d","M0,-4L8,0L0,4").attr("fill","#334155");
+
+const container = svg.append("g");
+
+// Zoom + pan
+const zoom = d3.zoom().scaleExtent([0.1, 5]).on("zoom", e => container.attr("transform", e.transform));
+svg.call(zoom);
+
+// Degree map
+const degIn = {}, degOut = {};
+GRAPH.edges.forEach(e => { degOut[e.from] = (degOut[e.from]||0)+1; degIn[e.to] = (degIn[e.to]||0)+1; });
+
+const maxSize = d3.max(GRAPH.nodes, n => n.size) || 1;
+const rScale = d => Math.max(7, Math.min(28, 7 + (d / maxSize) * 21));
+
+// Build simulation nodes/links
+const nodes = GRAPH.nodes.map(n => ({...n}));
+const nodeMap = Object.fromEntries(nodes.map(n => [n.id, n]));
+const links = GRAPH.edges.map(e => ({source: e.from, target: e.to}));
+
+const sim = d3.forceSimulation(nodes)
+  .force("link", d3.forceLink(links).id(n => n.id).distance(90).strength(0.4))
+  .force("charge", d3.forceManyBody().strength(-280))
+  .force("center", d3.forceCenter(W/2, H/2))
+  .force("collide", d3.forceCollide(n => rScale(n.size) + 8))
+  .force("x", d3.forceX(W/2).strength(0.04))
+  .force("y", d3.forceY(H/2).strength(0.04));
+
+// Draw links
+const link = container.selectAll(".link")
+  .data(links).join("line").attr("class","link");
+
+// Draw nodes
+const node = container.selectAll(".node")
+  .data(nodes).join("g").attr("class","node")
+  .call(d3.drag()
+    .on("start", (e,d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on("drag",  (e,d) => { d.fx=e.x; d.fy=e.y; })
+    .on("end",   (e,d) => { if (!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+
+node.append("circle")
+  .attr("r", d => rScale(d.size))
+  .attr("fill", d => PALETTE[d.group] || "#64748b")
+  .attr("fill-opacity", 0.85)
+  .attr("stroke", d => PALETTE[d.group] || "#64748b");
+
+node.append("text")
+  .attr("dy", d => rScale(d.size) + 13)
+  .attr("text-anchor","middle")
+  .text(d => d.id.split("/").pop().replace(".py","").replace(".js",""));
+
+// Tooltip + highlight
+const tt = document.getElementById("tooltip");
+let frozen = false;
+
+node.on("mouseover", (event, d) => {
+  const outEdges = links.filter(l => (l.source.id||l.source) === d.id).length;
+  const inEdges  = links.filter(l => (l.target.id||l.target) === d.id).length;
+
+  document.getElementById("tt-title").textContent = d.id;
+  document.getElementById("tt-group").textContent = d.group;
+  document.getElementById("tt-size").textContent = (d.size/1024).toFixed(1) + " KB";
+  document.getElementById("tt-imports").textContent = outEdges;
+  document.getElementById("tt-importedby").textContent = inEdges;
+  tt.style.display = "block";
+
+  // Highlight connected links
+  link.classed("highlight", l => (l.source.id||l.source)===d.id || (l.target.id||l.target)===d.id);
+  document.getElementById("s-selected").textContent = d.id;
+})
+.on("mousemove", event => {
+  tt.style.left = (event.clientX + 16) + "px";
+  tt.style.top  = Math.min(event.clientY - 10, window.innerHeight - 180) + "px";
+})
+.on("mouseleave", () => {
+  tt.style.display = "none";
+  link.classed("highlight", false);
+  document.getElementById("s-selected").textContent = "—";
+});
+
+// Tick
+sim.on("tick", () => {
+  link
+    .attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+    .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+  node.attr("transform", d => `translate(${d.x},${d.y})`);
+});
+
+// Stats
+document.getElementById("s-nodes").textContent = nodes.length;
+document.getElementById("s-edges").textContent = links.length;
+
+// Search
+document.getElementById("search").addEventListener("input", function() {
+  const q = this.value.toLowerCase();
+  node.select("circle")
+    .attr("fill-opacity", d => !q || d.id.toLowerCase().includes(q) ? 0.85 : 0.12)
+    .attr("stroke-opacity", d => !q || d.id.toLowerCase().includes(q) ? 1 : 0.1);
+  node.select("text")
+    .attr("fill-opacity", d => !q || d.id.toLowerCase().includes(q) ? 1 : 0.1);
+  link.attr("stroke-opacity", l => {
+    if (!q) return 0.55;
+    const s = (l.source.id||l.source), t = (l.target.id||l.target);
+    return (s.toLowerCase().includes(q) || t.toLowerCase().includes(q)) ? 0.9 : 0.06;
+  });
+});
+
+// Controls
+document.getElementById("btn-reset").addEventListener("click", () => {
+  svg.transition().duration(700).call(zoom.transform, d3.zoomIdentity);
+});
+document.getElementById("btn-freeze").addEventListener("click", function() {
+  frozen = !frozen;
+  this.textContent = frozen ? "▶" : "⏸";
+  this.title = frozen ? "Resume physics" : "Freeze physics";
+  frozen ? sim.stop() : sim.restart();
+});
+
+window.addEventListener("resize", () => {
+  svg.attr("width", window.innerWidth).attr("height", window.innerHeight);
+  sim.force("center", d3.forceCenter(window.innerWidth/2, window.innerHeight/2)).restart();
+});
+</script>
+</body>
+</html>

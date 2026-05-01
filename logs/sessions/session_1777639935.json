@@ -1,0 +1,20 @@
+{
+  "session_id": "session_1777639935",
+  "title": "New Chat",
+  "created": "2026-05-01T18:22:15.264847",
+  "last_active": "2026-05-01T18:22:15.636238",
+  "current_goal": "How are you?",
+  "current_plan": null,
+  "workspace_dir": "D:\\n1ggaman\\agentic\\workspace\\project_1777639935",
+  "conversation": [],
+  "mode": "discuss",
+  "iteration_count": 0,
+  "files_created": [],
+  "tech_stack": null,
+  "file_structure": [],
+  "last_task": null,
+  "artifacts": [],
+  "thinking_mode": false,
+  "auto_execute": false,
+  "max_debug_iterations": 0
+}

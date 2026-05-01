@@ -1,0 +1,9 @@
+{
+  "api_base": "http://localhost:5000",
+  "api_routes": [],
+  "static_files": {
+    "main_js": null,
+    "main_css": null
+  },
+  "html_ids": []
+}

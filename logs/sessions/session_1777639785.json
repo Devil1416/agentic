@@ -1,0 +1,31 @@
+{
+  "session_id": "session_1777639785",
+  "title": "Who created you?",
+  "created": "2026-05-01T18:19:45.895442",
+  "last_active": "2026-05-01T18:22:59.812734",
+  "current_goal": null,
+  "current_plan": null,
+  "workspace_dir": null,
+  "conversation": [
+    {
+      "role": "user",
+      "content": "Who created you?",
+      "timestamp": "2026-05-01T18:21:56.635039"
+    },
+    {
+      "role": "assistant",
+      "content": "I am an AI model. I was developed by Google.",
+      "timestamp": "2026-05-01T18:22:59.812709"
+    }
+  ],
+  "mode": "discuss",
+  "iteration_count": 0,
+  "files_created": [],
+  "tech_stack": null,
+  "file_structure": [],
+  "last_task": null,
+  "artifacts": [],
+  "thinking_mode": false,
+  "auto_execute": false,
+  "max_debug_iterations": 0
+}

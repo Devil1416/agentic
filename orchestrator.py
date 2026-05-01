@@ -501,12 +501,53 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
     return best_result
 
 
-def run(task: str, workspace_name: str = None, status_cb=None, max_iterations: int | None = None, is_self_improve: bool = False):
-    """Plan and execute a task end-to-end."""
+def run(
+    task: str,
+    workspace_name: str = None,
+    status_cb=None,
+    max_iterations: int | None = None,
+    is_self_improve: bool = False,
+    parallel: bool | None = None,
+):
+    """Plan and execute a task end-to-end.
+
+    If REFLEXION_PARALLEL_AGENTS=true (or parallel=True) and not self-improve
+    mode, delegates to the ParallelOrchestrator for concurrent build/debug.
+    Otherwise falls back to the sequential execute_plan pipeline.
+    """
+    import os as _os
+
+    use_parallel = parallel
+    if use_parallel is None:
+        use_parallel = _os.getenv("REFLEXION_PARALLEL_AGENTS", "true").lower() == "true"
+
+    if use_parallel and not is_self_improve:
+        from orchestrator_parallel import ParallelOrchestrator
+
+        if not workspace_name:
+            workspace_name = f"project_{int(time.time())}"
+        workspace_dir = _os.path.join(WORKSPACE_BASE, workspace_name)
+        _os.makedirs(workspace_dir, exist_ok=True)
+
+        orch = ParallelOrchestrator(
+            workspace_dir=workspace_dir,
+            max_iterations=max_iterations or MAX_ITERATIONS,
+            num_variants=2,
+            parallel=True,
+            status_cb=status_cb,
+        )
+        return orch.run(task)
+
+    # Fallback: classic sequential pipeline
     plan = generate_plan(task, workspace_name=workspace_name)
     if "error" in plan:
         return plan
-    return execute_plan(plan, task, plan["workspace_dir"], status_cb=status_cb, max_iterations=max_iterations, is_self_improve=is_self_improve)
+    return execute_plan(
+        plan, task, plan["workspace_dir"],
+        status_cb=status_cb,
+        max_iterations=max_iterations,
+        is_self_improve=is_self_improve,
+    )
 
 
 def _run_entrypoint(workspace_dir: str, entrypoint: str, language: str) -> str:
