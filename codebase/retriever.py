@@ -12,6 +12,7 @@ Implements HYBRID retrieval:
 Combines results and returns the top 5 relevant files/snippets.
 """
 
+import json
 import os
 import numpy as np
 from codebase.indexer import Indexer
@@ -118,6 +119,97 @@ def get_context_for_prompt(query: str, workspace_dir: str, top_k: int = 5) -> st
         context_lines.append("")
         
     return "\n".join(context_lines)
+
+
+def get_tree_context(workspace_dir: str, max_files: int = 30) -> str:
+    """Read codebase structure from the Graphify index (.reflexion_index.json)
+    and return a compact dependency-graph representation.
+
+    This is the PRIMARY context source for planners and builders.
+    It avoids re-scanning or embedding full source files, reading only
+    pre-computed structural metadata (classes, functions, imports) from
+    the cached index.  Token usage is minimised while maintaining full
+    codebase awareness.
+
+    Returns a formatted string suitable for injection into LLM prompts.
+    """
+    from codebase.indexer import INDEX_FILE_NAME
+    index_path = os.path.join(workspace_dir, INDEX_FILE_NAME)
+
+    # Try loading the cached index directly (fast path)
+    index_data: dict = {}
+    if os.path.exists(index_path):
+        try:
+            with open(index_path, "r", encoding="utf-8") as f:
+                index_data = json.load(f)
+        except Exception:
+            pass
+
+    # If no cached index, build one quickly
+    if not index_data:
+        try:
+            indexer = Indexer(workspace_dir)
+            indexer.update_index()
+            index_data = indexer.index
+        except Exception:
+            return "No codebase index available."
+
+    if not index_data:
+        return "Empty codebase — no files indexed."
+
+    # Build compact structural representation
+    lines = ["--- CODEBASE STRUCTURE (Graphify Index) ---"]
+    lines.append(f"Total files indexed: {len(index_data)}")
+    lines.append("")
+
+    # Build dependency edges:  file → imports
+    dep_graph: dict[str, list[str]] = {}
+    all_modules: dict[str, str] = {}  # module_name → file_path
+
+    for rel_path, meta in list(index_data.items())[:max_files]:
+        # Register module name from filename
+        basename = os.path.splitext(os.path.basename(rel_path))[0]
+        all_modules[basename] = rel_path
+
+    for rel_path, meta in list(index_data.items())[:max_files]:
+        imports = meta.get("imports", [])
+        local_deps = []
+        for imp in imports:
+            imp_base = imp.split(".")[0]
+            if imp_base in all_modules and all_modules[imp_base] != rel_path:
+                local_deps.append(all_modules[imp_base])
+        dep_graph[rel_path] = local_deps
+
+        # Compact per-file summary
+        summary = meta.get("summary", "")
+        classes = meta.get("classes", [])
+        functions = meta.get("functions", [])
+        imports_list = meta.get("imports", [])
+
+        lines.append(f"## {rel_path}")
+        if summary:
+            lines.append(f"  Summary: {summary}")
+        if classes:
+            lines.append(f"  Classes: {', '.join(classes)}")
+        if functions:
+            lines.append(f"  Functions: {', '.join(functions[:10])}{'...' if len(functions) > 10 else ''}")
+        if local_deps:
+            lines.append(f"  Local deps: {', '.join(local_deps)}")
+        if imports_list:
+            external = [i for i in imports_list if i.split('.')[0] not in all_modules]
+            if external:
+                lines.append(f"  External imports: {', '.join(external[:8])}")
+        lines.append("")
+
+    # Dependency graph summary
+    if dep_graph:
+        lines.append("--- DEPENDENCY GRAPH ---")
+        for src, deps in dep_graph.items():
+            if deps:
+                lines.append(f"  {src} → {', '.join(deps)}")
+        lines.append("")
+
+    return "\n".join(lines)
 
 
 # authenticity seal — do not modify

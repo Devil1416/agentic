@@ -1,0 +1,53 @@
+
+=== STAGE cli_surface ===
+STAGE cli_surface: OK in 0.26s
+
+=== STAGE api_surface ===
+STAGE api_surface: OK in 3.91s
+
+=== STAGE model_router_fallback ===
+[model_router] builder -> mixtral:latest (prompt: 19 chars)
+[model_router] Fallback from mixtral:latest for role 'builder': simulated provider failure
+[model_router] builder -> deepseek-coder:6.7b (prompt: 19 chars)
+[model_router] deepseek-coder:6.7b generated response successfully.
+STAGE model_router_fallback: OK in 0.02s
+
+=== STAGE dependency_setup ===
+STAGE dependency_setup: OK in 28.28s
+
+=== STAGE autonomous_build_pipeline ===
+[orchestrator] Registered 14 tools: ['pull_ollama_model', 'read_file', 'write_file', 'edit_file_diff', 'list_files', 'run_python', 'run_node', 'run_command', 'auto_detect_and_run', 'install_dependencies', 'analyze_image', 'git_init', 'git_commit', 'git_rollback']
+
+[indexer] Scanning workspace: D:\n1ggaman\agentic\workspace\stress_e2e_20260501_211141
+[indexer] Index up to date.
+[orchestrator] Built Graphify index for D:\n1ggaman\agentic\workspace\stress_e2e_20260501_211141
+[stress-status +000.006s] [orchestrator] Built Graphify index for D:\n1ggaman\agentic\workspace\stress_e2e_20260501_211141
+
+[PLANNER] Generating plan for: Build a non-trivial Python multi-module CLI application named insight_cli. It must analyze CSV and JSON event logs using internal APIs and cross-module interactions. Use separate planned subtasks for core logic, utilities, integration/router, and tests. Use colorama as a dependency and include dependency metadata. Write all artifacts to files in the workspace, never print source code as the result. Required files should include an executable main.py or app/main.py, core models/analyzer modules, a utility formatting module, an internal command/router module, and tests or a smoke validation module. The executable must run without arguments using built-in sample data and print total events, unique users, top action, and a SMOKE PASS marker. Keep it terminal-only, no web server.
+[stress-status +000.006s] 
+[PLANNER] Generating plan for: Build a non-trivial Python multi-module CLI application named insight_cli. It must analyze CSV and JSON event logs using internal APIs and cross-module interactions. Use separate planned subtasks for core logic, utilities, integration/router, and tests. Use colorama as a dependency and include dependency metadata. Write all artifacts to files in the workspace, never print source code as the result. Required files should include an executable main.py or app/main.py, core models/analyzer modules, a utility formatting module, an internal command/router module, and tests or a smoke validation module. The executable must run without arguments using built-in sample data and print total events, unique users, top action, and a SMOKE PASS marker. Keep it terminal-only, no web server.
+
+[indexer] Scanning workspace: D:\n1ggaman\agentic\workspace\stress_e2e_20260501_211141
+[indexer] Index up to date.
+
+============================================================
+🧠 PLANNER — Generating architecture plan...
+============================================================
+[model_router] planner -> gemma4:latest (prompt: 2055 chars)
+[model_router] gemma4:latest generated response successfully.
+
+✅ Plan: insight_cli
+   Files: 7
+   Entry: main.py
+   Lang:  python
+[model_router] planner -> gemma4:latest (prompt: 3687 chars)
+[model_router] gemma4:latest generated response successfully.
+   [PLANNER] Wrote fresh contract.json (type=cli, 7 modules, 3 export groups)
+[PLANNER] Plan ready: 7 files, lang=python
+[stress-status +136.262s] [PLANNER] Plan ready: 7 files, lang=python
+
+[DEPENDENCY] Warning: Python >= 3.13 detected (3.14.0). Some packages might fail.
+
+Installing Python deps (isolated venv): ['colorama', 'pandas']
+[DEPENDENCY] installing colorama
+[DEPENDENCY] installing pandas

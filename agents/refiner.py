@@ -84,10 +84,14 @@ def _normalize_workspace_path(path: str, workspace_dir: str) -> str:
         candidate = os.path.abspath(os.path.join(workspace_dir, candidate))
 
     try:
-        if os.path.commonpath([candidate, workspace_dir]) != workspace_dir:
-            candidate = os.path.join(workspace_dir, os.path.basename(candidate))
+        # Use normcase for case-insensitive comparison on Windows
+        common = os.path.commonpath([os.path.normcase(candidate), os.path.normcase(workspace_dir)])
+        if common != os.path.normcase(workspace_dir):
+            # Preserve relative path structure instead of just basename
+            candidate = os.path.join(workspace_dir, "/".join(parts))
     except ValueError:
-        candidate = os.path.join(workspace_dir, os.path.basename(candidate))
+        # Different drives on Windows — use relative parts
+        candidate = os.path.join(workspace_dir, "/".join(parts))
 
     return candidate
 

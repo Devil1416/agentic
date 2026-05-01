@@ -1,0 +1,9 @@
+{
+  "contract.json": {
+    "summary": "This file defines the structural contract and configuration parameters for the application, including the base API URL, defined routes, static file locations, and necessary HTML identifiers.",
+    "classes": [],
+    "functions": [],
+    "imports": [],
+    "hash": "34c38e369a09bdcb4e9cd749ef8bf0dc"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "contract.json": {
+    "summary": "This JSON file acts as a configuration contract defining the API's base URL, expected API routes, placeholders for static files, and target HTML IDs.",
+    "classes": [],
+    "functions": [],
+    "imports": [],
+    "hash": "34c38e369a09bdcb4e9cd749ef8bf0dc"
+  }
+}

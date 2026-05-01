@@ -1,0 +1,8 @@
+import pandas as pd
+from colorama import Fore, Style
+
+def load_data(file):
+    if file.endswith('.csv'):
+        return pd.read_csv(file)
+    elif file.endswith('.json'):
+        return pd.read_json(file, orient='records')

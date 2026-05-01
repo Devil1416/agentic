@@ -51,7 +51,7 @@ RULES:
 - If you cannot fix the issue, output: {{"action": "done", "args": {{"result": "CANNOT_FIX: reason"}}}}
 """
 
-MAX_DEBUG_ROUNDS = 10
+MAX_DEBUG_ROUNDS = 5
 
 
 def _normalize_workspace_path(path: str, workspace_dir: str) -> str:
@@ -77,10 +77,14 @@ def _normalize_workspace_path(path: str, workspace_dir: str) -> str:
         candidate = os.path.abspath(os.path.join(workspace_dir, candidate))
 
     try:
-        if os.path.commonpath([candidate, workspace_dir]) != workspace_dir:
-            candidate = os.path.join(workspace_dir, os.path.basename(candidate))
+        # Use normcase for case-insensitive comparison on Windows
+        common = os.path.commonpath([os.path.normcase(candidate), os.path.normcase(workspace_dir)])
+        if common != os.path.normcase(workspace_dir):
+            # Preserve relative path structure instead of just basename
+            candidate = os.path.join(workspace_dir, "/".join(parts))
     except ValueError:
-        candidate = os.path.join(workspace_dir, os.path.basename(candidate))
+        # Different drives on Windows — use relative parts
+        candidate = os.path.join(workspace_dir, "/".join(parts))
 
     return candidate
 
@@ -106,6 +110,28 @@ def run_debugger(error_output: str, workspace_dir: str, files: list[str] = None,
 
     file_list = "\n".join(f"  - {f}" for f in (files or []))
 
+    # ── Extract file paths from traceback for accurate targeting ──────
+    import re as _re
+    traceback_files = []
+    for match in _re.finditer(r'File "([^"]+)", line (\d+)', error_output):
+        abs_path = match.group(1)
+        line_num = match.group(2)
+        # Map absolute path to workspace-relative path
+        try:
+            rel = os.path.relpath(abs_path, workspace_dir).replace("\\", "/")
+            if not rel.startswith(".."):
+                traceback_files.append(f"  - {rel} (line {line_num})")
+        except ValueError:
+            pass  # different drives on Windows
+
+    traceback_mapping = ""
+    if traceback_files:
+        traceback_mapping = (
+            "\nTraceback file mapping (use THESE paths for read_file/edit_file_diff):\n"
+            + "\n".join(traceback_files)
+        )
+    # ─────────────────────────────────────────────────────────────────
+
     prompt = f"""The following error occurred when running the project:
 
 ```
@@ -115,6 +141,7 @@ def run_debugger(error_output: str, workspace_dir: str, files: list[str] = None,
 Project directory: {workspace_dir}
 Project files:
 {file_list}
+{traceback_mapping}
 
 {memory_context}
 
@@ -127,6 +154,7 @@ Start by reading the file mentioned in the error trace."""
 
     fixes = []
     conversation = [prompt]
+    _prev_response = None  # convergence detection
 
     for round_num in range(MAX_DEBUG_ROUNDS):
         current_prompt = "\n\n---\n\n".join(conversation[-4:])
@@ -138,10 +166,17 @@ Start by reading the file mentioned in the error trace."""
             temperature=0.1,
         )
 
+        # ── Convergence detection: break if model repeats itself ────────
+        if _prev_response and response.strip() == _prev_response.strip():
+            print("   ⚠ Debugger stuck (same response). Exiting.")
+            break
+        _prev_response = response
+        # ──────────────────────────────────────────────────────────────────
+
         calls = parse_tool_calls(response)
 
         if not calls:
-            if round_num > 3:
+            if round_num > 1:
                 break
             conversation.append(response)
             conversation.append(
@@ -179,7 +214,6 @@ Start by reading the file mentioned in the error trace."""
                     fixes.append(call)
                     try:
                         p = call.get("args", {}).get("path", "unknown")
-                        import os
                         rel_path = os.path.relpath(p, workspace_dir)
                         if status_cb:
                             status_cb(f"[FILE UPDATED] {rel_path}")

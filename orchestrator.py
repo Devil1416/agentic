@@ -125,11 +125,17 @@ def generate_plan(task: str, workspace_name: str = None) -> dict:
     os.makedirs(workspace_dir, exist_ok=True)
     os.makedirs(LOGS_DIR, exist_ok=True)
 
+    # ── Graphify context: ensure index exists (lazy, no re-scan if cached) ──
     try:
-        from codebase.indexer import Indexer
-
-        indexer = Indexer(workspace_dir)
-        indexer.update_index()
+        from codebase.indexer import Indexer, INDEX_FILE_NAME
+        index_path = os.path.join(workspace_dir, INDEX_FILE_NAME)
+        if not os.path.exists(index_path):
+            # Only build index if one doesn't exist yet
+            indexer = Indexer(workspace_dir)
+            indexer.update_index()
+            print(f"[orchestrator] Built Graphify index for {workspace_dir}")
+        else:
+            print(f"[orchestrator] Graphify index already cached — skipping re-scan")
     except ImportError:
         pass
 
@@ -286,6 +292,22 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
 
         iter_log["variants"] = variants
 
+        # ── EARLY BAILOUT: catastrophic builder failure ───────────────────
+        all_failed = all(
+            len(v.get("files_written", [])) == 0 and len(v.get("errors", [])) > 0
+            for v in variants
+        ) if variants else True
+        if all_failed and variants:
+            log_status("\n[ORCHESTRATOR] All variants produced 0 files with errors. Catastrophic builder failure.")
+            session_log["iterations"].append(iter_log)
+            best_result = {
+                "verdict": {"verdict": "retry", "score": 0, "best_variant": 1},
+                "execution": ["Builder catastrophic failure: no files produced"],
+                "workspace": workspace_dir,
+            }
+            break
+        # ──────────────────────────────────────────────────────────────────
+
         for variant_id, variant_workspace in enumerate(variant_workspaces, start=1):
             from tools.executor import _detect_entrypoint
             detected = _detect_entrypoint(variant_workspace)
@@ -383,6 +405,14 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
             iter_log["judge"] = verdict
             best_variant_idx = max(0, min(len(variants) - 1, verdict.get("best_variant", 1) - 1))
             chosen_workspace = variant_workspaces[best_variant_idx]
+            # Recompute has_error for the SELECTED best variant only
+            if best_variant_idx < len(execution_results):
+                best_result_str = execution_results[best_variant_idx]
+                has_error = (
+                    "error" in best_result_str.lower()
+                    or "traceback" in best_result_str.lower()
+                    or "exit_code: 1" in best_result_str.lower()
+                )
 
         if variant_workspaces:
             _sync_variant_to_workspace(chosen_workspace, workspace_dir)
@@ -418,6 +448,9 @@ def execute_plan(plan: dict, task: str, workspace_dir: str, status_cb=None, max_
                 session_log["iterations"].append(iter_log)
                 break
 
+        # NOTE: Refiner (above) runs ONLY when !has_error and verdict=="refine".
+        #       Debugger (below) runs ONLY when has_error.
+        #       These paths are mutually exclusive — no race condition in sequential mode.
         log_status("\n[DEBUGGER] Errors detected - analyzing and fixing...")
         error_output = "\n\n".join(execution_results) if execution_results else f"Error: Entrypoint {entrypoint} missing."
         log_status(f"[ERROR]\n{error_output}")
@@ -622,6 +655,14 @@ def _prepare_variant_workspace(workspace_dir: str, iteration: int, variant_id: i
     # Always seed from workspace so contract.json is always present
     _copy_project_tree(workspace_dir, variant_dir)
 
+    # ── Safety net: ensure contract.json survives into variant ─────────
+    contract_src = os.path.join(workspace_dir, "contract.json")
+    contract_dst = os.path.join(variant_dir, "contract.json")
+    if os.path.isfile(contract_src) and not os.path.isfile(contract_dst):
+        shutil.copy2(contract_src, contract_dst)
+        print(f"[orchestrator] contract.json copied to variant_{variant_id}")
+    # ──────────────────────────────────────────────────────────────────
+
     return variant_dir
 
 
@@ -651,7 +692,7 @@ def _copy_project_tree(src_dir: str, dst_dir: str):
 
 
 def _install_python_deps(deps: list[str], workspace_dir: str):
-    """Install Python dependencies."""
+    """Install Python dependencies into an isolated workspace virtualenv."""
     if not deps:
         return
 
@@ -675,22 +716,22 @@ def _install_python_deps(deps: list[str], workspace_dir: str):
     if sys.version_info >= (3, 13):
         print(f"\n[DEPENDENCY] Warning: Python >= 3.13 detected ({sys.version.split()[0]}). Some packages might fail.")
 
-    print(f"\nInstalling Python deps: {deps}")
+    print(f"\nInstalling Python deps (isolated venv): {deps}")
     for d in deps:
         print(f"[DEPENDENCY] installing {d}")
 
-    dep_str = " ".join(deps)
-    result = run_command(f'"{sys.executable}" -m pip install {dep_str}', cwd=workspace_dir, timeout=120)
-    print(f"   {result[:200]}")
-    
+    # Use executor's install_dependencies which creates .venv per workspace
+    from tools.executor import install_dependencies
+    result = install_dependencies(project_dir=workspace_dir, language="python", deps=deps)
+    print(f"   {result[:300]}")
+
     if "error:" in result.lower() or "no matching distribution" in result.lower():
         print("   Dependency install failed. Attempting to fix names and retry...")
         fixed_deps = [d.replace("opencv", "opencv-python").replace("cv2", "opencv-python") for d in deps]
         fixed_deps = ["Pillow" if "pil" in d.lower() else d for d in fixed_deps]
         if fixed_deps != deps:
-            dep_str = " ".join(fixed_deps)
-            result = run_command(f'"{sys.executable}" -m pip install {dep_str}', cwd=workspace_dir, timeout=120)
-            print(f"   Retry result: {result[:200]}")
+            result = install_dependencies(project_dir=workspace_dir, language="python", deps=fixed_deps)
+            print(f"   Retry result: {result[:300]}")
 
 
 def _install_node_deps(deps: list[str], workspace_dir: str):

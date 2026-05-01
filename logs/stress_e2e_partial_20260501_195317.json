@@ -1,0 +1,64 @@
+{
+  "run_id": "20260501_195317",
+  "status": "stopped_after_deterministic_failure",
+  "log_stdout": "D:\\n1ggaman\\agentic\\logs\\stress_e2e_stdout.log",
+  "log_stderr": "D:\\n1ggaman\\agentic\\logs\\stress_e2e_stderr.log",
+  "workspace": "D:\\n1ggaman\\agentic\\workspace\\stress_e2e_20260501_195317",
+  "stage_timings_s": {
+    "cli_surface": 0.22,
+    "api_surface": 6.89,
+    "model_router_fallback": 0.02,
+    "dependency_setup": 50.89
+  },
+  "phase_observations_s": {
+    "planner_completed_at": 175.73,
+    "iteration_1_started_at": 194.979,
+    "parallel_builder_started_at": 194.992,
+    "executor_started_at": 490.647,
+    "judge_started_at": 496.001,
+    "debugger_refiner_started_at": 511.248,
+    "iteration_2_started_at": 805.333
+  },
+  "checks": {
+    "cli_surface": {
+      "reflexion_binary_on_path": false,
+      "literal_build_run_fix_test_subcommands": false,
+      "available_cli_surface": "python cli.py <task>, /run, session/help/status commands"
+    },
+    "api_surface": "passed health/models/token smoke calls",
+    "model_router_fallback": "passed simulated fallback; live mixtral 500s fell back to deepseek-coder/llama3",
+    "dependency_setup": "passed clean venv colorama install; generated project deps pandas/colorama installed with exit_code 0",
+    "parallel_agents": "observed two builder variants in parallel during iteration 1",
+    "planner_builder_orchestrator_debugger_judge": "all invoked",
+    "artifact_compile": "passed compileall",
+    "artifact_run": "failed ImportError: src.utils has no print_report",
+    "tests": "failed 6 errors: tests expect src.utils.Utils, module has no Utils",
+    "debugger": "invoked but did not converge before stopped; targeted wrong utils.py path and created __init__.py"
+  },
+  "primary_failures": [
+    "agents/builder.py run_builder fails Python file writes with: cannot access local variable ast where it is not associated with a value",
+    "Generated interfaces are inconsistent: main.py imports print_report, src/utils.py does not define it; tests expect Utils class, src/utils.py does not define it",
+    "Iteration 2 variant missing contract.json, causing builder halt",
+    "Concurrent debugger/refiner path reproduced same-workspace race/pathing risk"
+  ],
+  "success_criteria": {
+    "literal_reflexion_build_run_fix_test_commands": false,
+    "api_router_reliable": true,
+    "dependency_setup": true,
+    "autonomous_pipeline_invoked": true,
+    "parallel_agents_observed": true,
+    "artifacts_executable": false,
+    "debugger_auto_fix": false,
+    "tests_pass": false,
+    "overall_pass": false
+  },
+  "generated_files": [
+    "contract.json",
+    "data/sample_events.csv",
+    "data/sample_events.json",
+    "main.py",
+    "src/analyzer.py",
+    "src/utils.py",
+    "tests/test_cli.py"
+  ]
+}

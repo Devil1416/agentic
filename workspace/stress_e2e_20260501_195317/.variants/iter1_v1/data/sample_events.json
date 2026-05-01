@@ -1,0 +1,9 @@
+import pandas as pd
+from colorama import Fore, Style
+
+def load_json(file):
+    try:
+        df = pd.read_json(file)
+        return df
+    except Exception as e:
+        print(f"{Fore.RED}Error loading JSON file: {e}{Style.RESET_ALL}")

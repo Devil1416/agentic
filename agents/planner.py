@@ -106,18 +106,27 @@ def run_planner(task: str, workspace_dir: str) -> dict:
     # Fetch relevant memories and codebase context
     memory_context = get_relevant_context(task)
     
+    # PRIMARY CONTEXT: Read from Graphify tree/index (no re-scanning, no embedding)
     codebase_context = ""
     try:
-        from codebase.retriever import get_context_for_prompt
-        codebase_context = get_context_for_prompt(task, workspace_dir, top_k=5)
+        from codebase.retriever import get_tree_context
+        codebase_context = get_tree_context(workspace_dir, max_files=30)
     except Exception:
         pass
+
+    # FALLBACK: If Graphify tree is empty, use hybrid search
+    if not codebase_context or "no files indexed" in codebase_context.lower() or "no codebase index" in codebase_context.lower():
+        try:
+            from codebase.retriever import get_context_for_prompt
+            codebase_context = get_context_for_prompt(task, workspace_dir, top_k=5)
+        except Exception:
+            pass
 
     prompt = f"""Task: {task}
 
 Workspace: {workspace_dir}
 
-Codebase Context:
+Codebase Context (from Graphify index — structural metadata, not full source):
 {codebase_context}
 
 Memory:
@@ -155,11 +164,22 @@ Remember to wrap your response in the exact format shown in the system prompt.""
             print(f"   [PLANNER] Removed stale contract.json — regenerating fresh")
         # ───────────────────────────────────────────────────────────────────
 
-        contract_prompt = f"""Based on this project plan, define the strict interface contract.
+        # ── Detect project type: web (has frontend/backend) vs CLI ─────────
+        has_frontend = plan.get("frontend") is not None
+        has_backend = plan.get("backend") is not None
+        has_html = any(
+            (f.get("path", "") if isinstance(f, dict) else f).endswith((".html", ".jsx", ".tsx"))
+            for f in plan.get("files", [])
+        )
+        is_web_project = has_frontend or has_backend or has_html
+
+        if is_web_project:
+            contract_prompt = f"""Based on this project plan, define the strict interface contract.
 Plan: {json.dumps(plan)}
 
 Output ONLY a JSON object with this EXACT structure (no explanations, no markdown blocks):
 {{
+  "type": "web",
   "api_base": "http://localhost:5000",
   "api_routes": ["/api/resource", "/api/resource/<id>"],
   "static_files": {{
@@ -176,6 +196,37 @@ Rules:
 - api_base must always be "http://localhost:5000"
 - Do not omit or infer anything — be exhaustive
 """
+        else:
+            # CLI / pure-Python project contract
+            file_paths = []
+            for f_info in plan.get("files", []):
+                p = f_info.get("path") if isinstance(f_info, dict) else f_info
+                if p:
+                    file_paths.append(p)
+            contract_prompt = f"""Based on this project plan, define the strict interface contract for a CLI/library project.
+Plan: {json.dumps(plan)}
+
+Output ONLY a JSON object with this EXACT structure (no explanations, no markdown blocks):
+{{
+  "type": "cli",
+  "entrypoint": "{plan.get('entrypoint', 'main.py')}",
+  "modules": {json.dumps(file_paths)},
+  "exports": {{
+    "module_name": ["ClassOrFunction1", "ClassOrFunction2"]
+  }},
+  "run_command": "python {plan.get('entrypoint', 'main.py')}",
+  "expected_output_contains": ["expected string in output"],
+  "dependencies": {json.dumps(plan.get('dependencies', []))}
+}}
+
+Rules:
+- modules: list EVERY .py file the project needs
+- exports: for each module (not entrypoint), list the public classes/functions it MUST define
+- expected_output_contains: list strings the entrypoint should print when run successfully
+- Be exhaustive — list every module and its exports
+"""
+        # ──────────────────────────────────────────────────────────────────
+
         contract_resp = call_model(
             role="planner",
             prompt=contract_prompt,
@@ -194,23 +245,41 @@ Rules:
 
             contract_data = json.loads(c_text)
 
-            # Validate required keys before writing
-            required_keys = {"api_base", "api_routes", "static_files", "html_ids"}
-            missing_keys = required_keys - set(contract_data.keys())
-            if missing_keys:
-                raise ValueError(f"Contract missing required keys: {missing_keys}")
+            # Ensure type field is present
+            if "type" not in contract_data:
+                contract_data["type"] = "web" if is_web_project else "cli"
 
-            # Fallback html_ids if model returned empty list
-            if not contract_data.get("html_ids"):
-                has_html_files = any(f.get("path", "").endswith(".html") for f in plan.get("files", []))
-                if has_html_files:
-                    print("   [PLANNER] no html_ids defined — skipping ID validation")
-                contract_data["html_ids"] = []
+            # Validate required keys based on type
+            if contract_data.get("type") == "web":
+                required_keys = {"type", "api_base", "api_routes", "static_files", "html_ids"}
+                missing_keys = required_keys - set(contract_data.keys())
+                if missing_keys:
+                    raise ValueError(f"Web contract missing required keys: {missing_keys}")
+
+                # Fallback html_ids if model returned empty list
+                if not contract_data.get("html_ids"):
+                    if has_html:
+                        print("   [PLANNER] no html_ids defined — skipping ID validation")
+                    contract_data["html_ids"] = []
+            else:
+                required_keys = {"type", "entrypoint", "modules"}
+                missing_keys = required_keys - set(contract_data.keys())
+                if missing_keys:
+                    raise ValueError(f"CLI contract missing required keys: {missing_keys}")
+                # Ensure exports dict exists
+                if "exports" not in contract_data:
+                    contract_data["exports"] = {}
 
             with open(contract_path, "w", encoding="utf-8") as f:
                 json.dump(contract_data, f, indent=2)
-            print(f"   [PLANNER] Wrote fresh contract.json ({len(contract_data.get('api_routes', []))} routes, "
-                  f"{len(contract_data.get('html_ids', []))} html_ids)")
+
+            ctype = contract_data.get("type", "unknown")
+            if ctype == "web":
+                print(f"   [PLANNER] Wrote fresh contract.json (type=web, {len(contract_data.get('api_routes', []))} routes, "
+                      f"{len(contract_data.get('html_ids', []))} html_ids)")
+            else:
+                print(f"   [PLANNER] Wrote fresh contract.json (type=cli, {len(contract_data.get('modules', []))} modules, "
+                      f"{len(contract_data.get('exports', {}))} export groups)")
         except Exception as e:
             print(f"   [PLANNER] Failed to write contract.json: {e}")
     else:

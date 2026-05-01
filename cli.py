@@ -377,13 +377,25 @@ class CLI:
     # ── Intent routing ────────────────────────────────────────
 
     def _is_build_intent(self, text: str) -> bool:
+        """Check if user input expresses build intent.
+
+        AUTONOMOUS POLICY: aggressively matches build/create/generate
+        keywords and multi-file patterns. Uses _quick_classify first
+        (zero-cost regex) and only falls back to model if needed.
+        """
+        from agents.conversation_agent import _quick_classify
+        quick = _quick_classify(text)
+        if quick and quick.get("mode") == "EXECUTE":
+            return True
+
         from agents.conversation_agent import classify_intent
         try:
-            intent = classify_intent(text, self.session.state)
-            return intent in ("EXECUTE", "BUILD", "CREATE")
+            result = classify_intent(text, self.session.state)
+            mode = result if isinstance(result, str) else result.get("mode", "")
+            return mode in ("EXECUTE", "BUILD", "CREATE")
         except Exception:
             low = text.lower()
-            return any(k in low for k in ["build", "create", "make", "generate", "write", "implement", "add"])
+            return any(k in low for k in ["build", "create", "make", "generate", "write", "implement", "add", "project", "app", "application"])
 
     def _chat_respond(self, text: str) -> str:
         """Stream a conversational reply and return it."""
@@ -458,13 +470,10 @@ class CLI:
         self.session.add_message("user", line)
 
         if self._is_build_intent(line):
+            # AUTONOMOUS BUILDER: always execute immediately — no manual
+            # "continue" loops or "/run" gates.  Build intent = instant build.
             self.session.set_goal(line)
-            auto = self.session.state.get("auto_execute", False)
-            if auto:
-                self._run_build(line)
-            else:
-                self.session.add_message("assistant", f"Goal set: {line}")
-                _print(f"\n  Goal set. Type {CYAN}/run{R} to execute, or keep chatting.\n", DIM)
+            self._run_build(line)
         else:
             response = self._chat_respond(line)
             if response:
@@ -507,13 +516,113 @@ class CLI:
 def main():
     import argparse
     p = argparse.ArgumentParser(description="Reflexion — local autonomous coding agent")
-    p.add_argument("task", nargs="?", help="Single task to execute, then enter interactive mode")
+    sub = p.add_subparsers(dest="command")
+
+    # ── reflexion build <task> ────────────────────────────────────
+    build_p = sub.add_parser("build", help="Build a project from a task description")
+    build_p.add_argument("task", help="Task description (what to build)")
+    build_p.add_argument("--workspace", default=None, help="Workspace name")
+    build_p.add_argument("--max-iter", type=int, default=5, help="Max debug iterations")
+    build_p.add_argument("--sequential", action="store_true", help="Disable parallel agents")
+
+    # ── reflexion run [workspace] ────────────────────────────────
+    run_p = sub.add_parser("run", help="Execute the entrypoint of an existing workspace")
+    run_p.add_argument("workspace", nargs="?", default=None, help="Workspace directory or name")
+
+    # ── reflexion fix [workspace] ────────────────────────────────
+    fix_p = sub.add_parser("fix", help="Run debugger on an existing workspace")
+    fix_p.add_argument("workspace", nargs="?", default=None, help="Workspace directory or name")
+
+    # ── reflexion test [workspace] ───────────────────────────────
+    test_p = sub.add_parser("test", help="Execute + judge an existing workspace")
+    test_p.add_argument("workspace", nargs="?", default=None, help="Workspace directory or name")
+
+    # ── Legacy flags (interactive mode) ────────────────────────────
     p.add_argument("--resume", action="store_true", help="Resume the latest session")
     p.add_argument("--session", default=None, help="Specific session ID to load")
     p.add_argument("--check", action="store_true", help="System check only")
     p.add_argument("--sequential", action="store_true", help="Disable parallel agents")
+
+    # Handle legacy "python cli.py <task>" syntax:
+    # If first arg doesn't match a subcommand and isn't a flag, treat as build task
+    import sys as _sys
+    if len(_sys.argv) > 1 and _sys.argv[1] not in ("build", "run", "fix", "test", "--help", "-h", "--check", "--resume", "--session", "--sequential"):
+        # Legacy mode: rewrite as "build <task>"
+        _sys.argv = [_sys.argv[0], "build", " ".join(_sys.argv[1:])]
+
     args = p.parse_args()
 
+    # ── Subcommand dispatch ──────────────────────────────────────
+    if args.command == "build":
+        from orchestrator import run as _run, init_tools
+        init_tools()
+        parallel = not args.sequential
+        result = _run(
+            args.task,
+            workspace_name=args.workspace,
+            max_iterations=args.max_iter,
+            parallel=parallel,
+        )
+        if result:
+            v = result.get("verdict", {})
+            _print(f"\n  ✓ Build complete. Verdict: {v.get('verdict','done')}  Score: {v.get('score','?')}/10", GREEN)
+            _print(f"  Output: {result.get('workspace', '?')}", DIM)
+        else:
+            _print("\n  ✗ Build failed.", RED)
+        return
+
+    if args.command == "run":
+        from orchestrator import init_tools, WORKSPACE_BASE
+        init_tools()
+        ws = _resolve_workspace(args.workspace)
+        if not ws:
+            _print("  No workspace found. Specify a workspace name or path.", RED)
+            return
+        from tools.executor import auto_detect_and_run
+        result = auto_detect_and_run(ws)
+        print(result)
+        return
+
+    if args.command == "fix":
+        from orchestrator import init_tools, WORKSPACE_BASE, _get_project_files
+        init_tools()
+        ws = _resolve_workspace(args.workspace)
+        if not ws:
+            _print("  No workspace found. Specify a workspace name or path.", RED)
+            return
+        from tools.executor import auto_detect_and_run
+        exec_result = auto_detect_and_run(ws)
+        if "error" in exec_result.lower() or "traceback" in exec_result.lower():
+            _print(f"  Error detected, running debugger...", YELLOW)
+            from agents.debugger import run_debugger
+            debug_result = run_debugger(exec_result, ws, _get_project_files(ws))
+            if debug_result.get("fixed"):
+                _print(f"  ✓ Fix applied: {debug_result.get('summary', '')}", GREEN)
+            else:
+                _print(f"  ✗ Could not fix: {debug_result.get('summary', '')}", RED)
+        else:
+            _print("  No errors detected.", GREEN)
+        return
+
+    if args.command == "test":
+        from orchestrator import init_tools, WORKSPACE_BASE, _get_project_files
+        init_tools()
+        ws = _resolve_workspace(args.workspace)
+        if not ws:
+            _print("  No workspace found. Specify a workspace name or path.", RED)
+            return
+        from tools.executor import auto_detect_and_run
+        exec_result = auto_detect_and_run(ws)
+        print(exec_result)
+        from agents.judge import run_judge
+        verdict = run_judge("test run", [{"files_written": _get_project_files(ws), "errors": []}], [exec_result], workspace_dir=ws)
+        _print(f"\n  Verdict: {verdict.get('verdict','?')}  Score: {verdict.get('score','?')}/10", CYAN)
+        if verdict.get("issues"):
+            for issue in verdict["issues"]:
+                _print(f"    ✗ {issue}", YELLOW)
+        return
+
+    # ── Legacy / interactive mode ────────────────────────────────
     if args.check:
         from orchestrator import check_system, init_tools
         init_tools()
@@ -530,11 +639,27 @@ def main():
     if args.sequential:
         cli._parallel = False
 
-    if args.task:
-        cli.session.set_goal(args.task)
-        cli._run_build(args.task)
-
     cli.run()
+
+
+def _resolve_workspace(ws_arg):
+    """Resolve a workspace argument to an absolute path."""
+    if not ws_arg:
+        # Find most recent workspace
+        ws_base = os.path.join(ROOT, "workspace")
+        if not os.path.isdir(ws_base):
+            return None
+        entries = sorted(
+            [os.path.join(ws_base, d) for d in os.listdir(ws_base) if os.path.isdir(os.path.join(ws_base, d))],
+            key=os.path.getmtime, reverse=True,
+        )
+        return entries[0] if entries else None
+    if os.path.isdir(ws_arg):
+        return os.path.abspath(ws_arg)
+    candidate = os.path.join(ROOT, "workspace", ws_arg)
+    if os.path.isdir(candidate):
+        return candidate
+    return None
 
 
 if __name__ == "__main__":

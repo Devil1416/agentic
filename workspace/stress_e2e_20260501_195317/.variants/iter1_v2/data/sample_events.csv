@@ -1,0 +1,27 @@
+import pandas as pd
+from colorama import Fore, Style
+
+def load_data(file):
+    if file.endswith('.csv'):
+        return pd.read_csv(file)
+    elif file.endswith('.json'):
+        return pd.read_json(file)
+    else:
+        raise ValueError('Unsupported file type')
+
+def calculate_metrics(df, user_col='user_id', action_col='action'):
+    total_events = df.shape[0]
+    unique_users = df[user_col].nunique()
+    top_actions = df[action_col].value_counts().idxmax()
+    
+    return total_events, unique_users, top_actions
+
+def print_report(total_events, unique_users, top_actions):
+    print(f"{Fore.GREEN}Total events: {total_events}{Style.RESET_ALL}")
+    print(f"{Fore.YELLOW}Unique users: {unique_users}{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}Top action: {top_actions}{Style.RESET_ALL}")
+
+if __name__ == "__main__":
+    df = load_data('data/sample_events.csv')
+    total, unique, top = calculate_metrics(df)
+    print_report(total, unique, top)

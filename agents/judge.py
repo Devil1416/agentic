@@ -146,11 +146,9 @@ Output your verdict as JSON."""
 def _validate_contract(workspace_dir: str, variants: list[dict], verdict: dict) -> list[str]:
     """Perform strict cross-file validation against contract.json.
 
-    Checks:
-    1. html_ids exist in HTML AND are referenced in JS
-    2. api_routes are declared as @app.route in Flask files
-    3. JS fetch calls use api_base (not relative paths)
-    4. script/src/href references match static_files and exist on disk
+    Supports two contract types:
+    - "web": validates html_ids, api_routes, fetch calls, static_files
+    - "cli": validates modules exist, entrypoint exists, exports are defined
     """
     contract_path = os.path.join(workspace_dir, "contract.json")
     if not os.path.exists(contract_path):
@@ -162,6 +160,12 @@ def _validate_contract(workspace_dir: str, variants: list[dict], verdict: dict) 
     except Exception as e:
         return [f"contract.json unreadable: {e}"]
 
+    contract_type = contract.get("type", "web")
+
+    if contract_type == "cli":
+        return _validate_cli_contract(workspace_dir, contract)
+
+    # ── Web contract validation (existing logic) ─────────────────────
     mismatches = []
     api_base = contract.get("api_base", "http://localhost:5000")
     api_routes = contract.get("api_routes", [])
@@ -231,6 +235,68 @@ def _validate_contract(workspace_dir: str, variants: list[dict], verdict: dict) 
         # Check HTML references the exact rel_path
         if html_content and rel_path not in html_content:
             mismatches.append(f"HTML does not reference static_file path '{rel_path}'")
+
+    return mismatches
+
+
+def _validate_cli_contract(workspace_dir: str, contract: dict) -> list[str]:
+    """Validate a CLI/library contract: modules exist, exports defined, entrypoint exists."""
+    import ast as _ast
+
+    mismatches = []
+    entrypoint = contract.get("entrypoint", "main.py")
+    modules = contract.get("modules", [])
+    exports = contract.get("exports", {})
+
+    # 1. Validate entrypoint exists
+    ep_path = os.path.join(workspace_dir, entrypoint)
+    if not os.path.isfile(ep_path):
+        mismatches.append(f"entrypoint '{entrypoint}' not found on disk")
+
+    # 2. Validate all modules exist on disk
+    for mod_path in modules:
+        full = os.path.join(workspace_dir, mod_path)
+        if not os.path.isfile(full):
+            mismatches.append(f"module '{mod_path}' not found on disk")
+
+    # 3. Validate exports are actually defined in their modules
+    for mod_name, expected_symbols in exports.items():
+        # Resolve module name to file path
+        candidates = [
+            os.path.join(workspace_dir, f"{mod_name}.py"),
+            os.path.join(workspace_dir, "src", f"{mod_name}.py"),
+            os.path.join(workspace_dir, mod_name, "__init__.py"),
+        ]
+        mod_file = None
+        for c in candidates:
+            if os.path.isfile(c):
+                mod_file = c
+                break
+
+        if not mod_file:
+            mismatches.append(f"export module '{mod_name}' not found as a file")
+            continue
+
+        # Parse the file and collect top-level definitions
+        try:
+            with open(mod_file, "r", encoding="utf-8") as f:
+                tree = _ast.parse(f.read())
+            defined = set()
+            for node in _ast.iter_child_nodes(tree):
+                if isinstance(node, (_ast.FunctionDef, _ast.AsyncFunctionDef)):
+                    defined.add(node.name)
+                elif isinstance(node, _ast.ClassDef):
+                    defined.add(node.name)
+                elif isinstance(node, _ast.Assign):
+                    for target in node.targets:
+                        if isinstance(target, _ast.Name):
+                            defined.add(target.id)
+
+            for sym in expected_symbols:
+                if sym not in defined:
+                    mismatches.append(f"export '{sym}' not defined in module '{mod_name}'")
+        except Exception as e:
+            mismatches.append(f"cannot parse module '{mod_name}': {e}")
 
     return mismatches
 

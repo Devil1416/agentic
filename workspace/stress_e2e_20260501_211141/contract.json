@@ -1,0 +1,35 @@
+{
+  "type": "cli",
+  "entrypoint": "main.py",
+  "modules": [
+    "data/sample_events.csv",
+    "data/sample_events.json",
+    "src/utils/formatter.py",
+    "src/analyzer/log_analyzer.py",
+    "src/cli/cli_router.py",
+    "tests/test_analyzer.py",
+    "main.py"
+  ],
+  "exports": {
+    "src/utils/formatter.py": [
+      "format_output"
+    ],
+    "src/analyzer/log_analyzer.py": [
+      "analyze_data"
+    ],
+    "src/cli/cli_router.py": [
+      "run_cli"
+    ]
+  },
+  "run_command": "python main.py",
+  "expected_output_contains": [
+    "Analysis Summary:",
+    "Total Events:",
+    "Unique Users:",
+    "Top Action:"
+  ],
+  "dependencies": [
+    "colorama",
+    "pandas"
+  ]
+}

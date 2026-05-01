@@ -1,0 +1,23 @@
+{
+  "type": "cli",
+  "entrypoint": "main.py",
+  "modules": [
+    "src/checker.py",
+    "main.py"
+  ],
+  "exports": {
+    "src/checker.py": [
+      "check_operation"
+    ],
+    "main.py": [
+      "cli"
+    ]
+  },
+  "run_command": "python main.py",
+  "expected_output_contains": [
+    "Check operation completed successfully."
+  ],
+  "dependencies": [
+    "click"
+  ]
+}

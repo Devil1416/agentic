@@ -56,6 +56,11 @@ def _seed_variant(src: str, dst: str):
             shutil.copy2(s, d)
         elif os.path.isdir(s) and item not in ("node_modules", "__pycache__", "venv"):
             shutil.copytree(s, d, dirs_exist_ok=True)
+    # Safety net: ensure contract.json is always present in variant
+    contract_src = os.path.join(src, "contract.json")
+    contract_dst = os.path.join(dst, "contract.json")
+    if os.path.isfile(contract_src) and not os.path.isfile(contract_dst):
+        shutil.copy2(contract_src, contract_dst)
 
 
 def _sync_to_workspace(src: str, dst: str):
@@ -244,7 +249,7 @@ class ParallelOrchestrator:
 
         return results
 
-    # ── Phase 4: Debug + Refine (concurrent) ─────────────────
+    # ── Phase 4: Debug + Refine (SEQUENTIAL — no race conditions) ──
 
     def debug_and_refine(
         self,
@@ -253,18 +258,22 @@ class ParallelOrchestrator:
         verdict: Optional[dict] = None,
     ) -> tuple[dict, dict]:
         """
-        Run debugger and refiner concurrently.
+        Run debugger then refiner SEQUENTIALLY on the same workspace.
+        Previously concurrent — caused race conditions with both agents
+        modifying the same files simultaneously.
         Returns (debug_result, refine_result).
         """
         files = _get_project_files(chosen_workspace)
         suggestions = verdict.get("suggestions", []) if verdict else []
         mismatches = verdict.get("issues", []) if verdict else []
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
-            debug_fut = pool.submit(_debug_variant, error_output, chosen_workspace, files, self.status_cb)
-            refine_fut = pool.submit(_refine_variant, chosen_workspace, files, suggestions, mismatches, self.status_cb)
-            debug_result = debug_fut.result()
-            refine_result = refine_fut.result()
+        # Debugger first: fix errors
+        debug_result = _debug_variant(error_output, chosen_workspace, files, self.status_cb)
+
+        # Refiner second: polish after debug fixes have landed
+        # Re-read files in case debugger created/modified them
+        files = _get_project_files(chosen_workspace)
+        refine_result = _refine_variant(chosen_workspace, files, suggestions, mismatches, self.status_cb)
 
         return debug_result, refine_result
 
@@ -280,6 +289,20 @@ class ParallelOrchestrator:
     def run(self, task: str) -> Optional[dict]:
         """Execute the full parallel pipeline. Returns final result dict or None."""
         os.makedirs(self.workspace_dir, exist_ok=True)
+
+        # ── Graphify context: ensure index exists (lazy, no re-scan if cached) ──
+        try:
+            from codebase.indexer import Indexer, INDEX_FILE_NAME
+            index_path = os.path.join(self.workspace_dir, INDEX_FILE_NAME)
+            if not os.path.exists(index_path):
+                indexer = Indexer(self.workspace_dir)
+                indexer.update_index()
+                self._log(f"[orchestrator] Built Graphify index for {self.workspace_dir}")
+            else:
+                self._log(f"[orchestrator] Graphify index already cached — skipping re-scan")
+        except ImportError:
+            pass
+
         plan = self.plan(task)
 
         # Install deps
@@ -329,6 +352,14 @@ class ParallelOrchestrator:
                 iter_log["judge"] = verdict
                 best_idx = max(0, min(len(variants) - 1, verdict.get("best_variant", 1) - 1))
                 chosen_workspace = variant_workspaces[best_idx]
+                # Recompute has_error for the SELECTED best variant only
+                if best_idx < len(exec_results):
+                    best_exec = exec_results[best_idx]
+                    has_error = (
+                        "error" in best_exec.lower()
+                        or "traceback" in best_exec.lower()
+                        or "exit_code: 1" in best_exec.lower()
+                    )
 
             _sync_to_workspace(chosen_workspace, self.workspace_dir)
 
